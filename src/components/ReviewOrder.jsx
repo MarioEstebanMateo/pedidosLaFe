@@ -108,9 +108,8 @@ const ReviewOrder = () => {
     const doc = generatePDF()
     const pdfBlob = doc.output('blob')
     
-    // Create a FormData to send the file
-    const formData = new FormData()
-    formData.append('file', pdfBlob, 'PedidoLaFe.pdf')
+    // Use consistent filename for both saving and sharing
+    const pdfFilename = `Pedido_LaFe_${orderData.sucursalTitle}_${formatDate(orderData.orderDate).replace(/\//g, '-')}.pdf`
     
     // Create a temporary link for download as a fallback
     const pdfUrl = URL.createObjectURL(pdfBlob)
@@ -118,42 +117,36 @@ const ReviewOrder = () => {
     // Create text for WhatsApp
     const message = `Nuevo pedido para sucursal ${orderData.sucursalTitle} - Fecha de entrega: ${formatDate(orderData.orderDate)}`
     
-    // Specific WhatsApp number to send to
-    const whatsappNumber = '+542477347638'
-    
     // Try to share via Web Share API
     try {
       if (navigator.share) {
         navigator.share({
           title: 'Pedido La Fe',
           text: message,
-          files: [new File([pdfBlob], 'PedidoLaFe.pdf', { type: 'application/pdf' })]
-        }).then(() => {
-          // Also open WhatsApp with the specific number
-          window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank')
+          files: [new File([pdfBlob], pdfFilename, { type: 'application/pdf' })]
         }).catch(error => {
           console.error('Error sharing:', error)
           // Fallback to direct WhatsApp link
-          window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank')
+          window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank')
         })
       } else {
-        // Direct WhatsApp link with the specific number
-        window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank')
+        // Direct WhatsApp link without specific number
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank')
         
         // Offer direct download
         const link = document.createElement('a')
         link.href = pdfUrl
-        link.download = 'PedidoLaFe.pdf'
+        link.download = pdfFilename
         link.click()
       }
     } catch (error) {
       console.error('Error sharing:', error)
-      // Fallback to direct WhatsApp link with the specific number
-      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank')
+      // Fallback to direct WhatsApp link without specific number
+      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank')
       
       const link = document.createElement('a')
       link.href = pdfUrl
-      link.download = 'PedidoLaFe.pdf'
+      link.download = pdfFilename
       link.click()
     }
   }
@@ -320,7 +313,7 @@ const ReviewOrder = () => {
                 <th style={styles.th}>Tipo</th>
                 <th style={styles.th}>Producto</th>
                 <th style={styles.th}>Cantidad</th>
-                <th style={styles.th}>Kgs</th> {/* New column */}
+                <th style={styles.th}>Kgs</th>
               </tr>
             </thead>
             <tbody>
@@ -329,7 +322,7 @@ const ReviewOrder = () => {
                   <td style={styles.td}>Helado</td>
                   <td style={styles.td}>{item.title}</td>
                   <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}></td> {/* Empty cell for Kgs */}
+                  <td style={styles.td}>{/* Empty cell for Kgs */}</td>
                 </tr>
               ))}
               
@@ -338,7 +331,7 @@ const ReviewOrder = () => {
                   <td style={styles.td}>Postre</td>
                   <td style={styles.td}>{item.title}</td>
                   <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}></td> {/* Empty cell for Kgs */}
+                  <td style={styles.td}>{/* Empty cell for Kgs */}</td>
                 </tr>
               ))}
               
@@ -347,7 +340,7 @@ const ReviewOrder = () => {
                   <td style={styles.td}>Soft</td>
                   <td style={styles.td}>{item.title}</td>
                   <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}></td> {/* Empty cell for Kgs */}
+                  <td style={styles.td}>{/* Empty cell for Kgs */}</td>
                 </tr>
               ))}
               
@@ -356,7 +349,7 @@ const ReviewOrder = () => {
                   <td style={styles.td}>Térmico</td>
                   <td style={styles.td}>{item.title}</td>
                   <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}></td> {/* Empty cell for Kgs */}
+                  <td style={styles.td}>{/* Empty cell for Kgs */}</td>
                 </tr>
               ))}
             </tbody>
