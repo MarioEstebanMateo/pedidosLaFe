@@ -5,7 +5,25 @@ import supabase from '../db/SupabaseClient'
 import logoLaFe from '../assets/img/logo-lafe.png'
 
 const Home = () => {
-  // Call the test function
+  const [sucursales, setSucursales] = useState([])
+  const [helados, setHelados] = useState([])
+  const [postres, setPostres] = useState([])
+  const [softs, setSofts] = useState([])
+  const [termicos, setTermicos] = useState([])
+  
+  // Track quantities separately for each product type
+  const [heladosQuantities, setHeladosQuantities] = useState({})
+  const [postresQuantities, setPostresQuantities] = useState({})
+  const [softsQuantities, setSoftsQuantities] = useState({})
+  const [termicosQuantities, setTermicosQuantities] = useState({})
+  
+  // Add state for order date - initialize with today's date
+  const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0])
+
+  // Fetch data from supabase
+  useEffect(() => {
+
+      // Call the test function
   testSupabaseConnection().then(isConnected => {
     if (isConnected) {
         console.log('Supabase is working correctly!')
@@ -14,18 +32,6 @@ const Home = () => {
     }
   })
 
-  const [sucursales, setSucursales] = useState([])
-  const [helados, setHelados] = useState([])
-  const [postres, setPostres] = useState([])
-  const [softs, setSofts] = useState([])
-  const [termicos, setTermicos] = useState([])
-  const [quantities, setQuantities] = useState({})
-  
-  // Add state for order date - initialize with today's date
-  const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0])
-
-  // Fetch data from supabase
-  useEffect(() => {
     const fetchData = async () => {
       const { data: sucursalesData, error: sucursalesError } = await supabase
         .from('sucursales')
@@ -47,11 +53,11 @@ const Home = () => {
         setHelados(heladosData)
         
         // Initialize quantities state with all helados set to 0
-        const initialQuantities = {}
+        const initialHeladosQuantities = {}
         heladosData.forEach(helado => {
-          initialQuantities[helado.id] = 0
+          initialHeladosQuantities[helado.id] = 0
         })
-        setQuantities(initialQuantities)
+        setHeladosQuantities(initialHeladosQuantities)
       }
 
       const { data: postresData, error: postresError } = await supabase
@@ -62,6 +68,13 @@ const Home = () => {
         console.error('Error fetching postres:', postresError)
       } else {
         setPostres(postresData)
+        
+        // Initialize quantities state for postres
+        const initialPostresQuantities = {}
+        postresData.forEach(postre => {
+          initialPostresQuantities[postre.id] = 0
+        })
+        setPostresQuantities(initialPostresQuantities)
       }
 
       const { data: softsData, error: softsError } = await supabase
@@ -72,6 +85,13 @@ const Home = () => {
         console.error('Error fetching softs:', softsError)
       } else {
         setSofts(softsData)
+        
+        // Initialize quantities state for softs
+        const initialSoftsQuantities = {}
+        softsData.forEach(soft => {
+          initialSoftsQuantities[soft.id] = 0
+        })
+        setSoftsQuantities(initialSoftsQuantities)
       }
 
       const { data: termicosData, error: termicosError } = await supabase
@@ -82,20 +102,70 @@ const Home = () => {
         console.error('Error fetching termicos:', termicosError)
       } else {
         setTermicos(termicosData)
+        
+        // Initialize quantities state for termicos
+        const initialTermicosQuantities = {}
+        termicosData.forEach(termico => {
+          initialTermicosQuantities[termico.id] = 0
+        })
+        setTermicosQuantities(initialTermicosQuantities)
       }
     }
     fetchData()
   }, [])
 
-  const handleIncrement = (id) => {
-    setQuantities(prev => ({
+  // Handle quantity changes for each product type
+  const handleIncrementHelado = (id) => {
+    setHeladosQuantities(prev => ({
       ...prev,
       [id]: (prev[id] || 0) + 1
     }))
   }
 
-  const handleDecrement = (id) => {
-    setQuantities(prev => ({
+  const handleDecrementHelado = (id) => {
+    setHeladosQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+  
+  const handleIncrementPostre = (id) => {
+    setPostresQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementPostre = (id) => {
+    setPostresQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+  
+  const handleIncrementSoft = (id) => {
+    setSoftsQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementSoft = (id) => {
+    setSoftsQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+  
+  const handleIncrementTermico = (id) => {
+    setTermicosQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementTermico = (id) => {
+    setTermicosQuantities(prev => ({
       ...prev,
       [id]: Math.max(0, (prev[id] || 0) - 1)
     }))
@@ -171,9 +241,9 @@ const Home = () => {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
       gap: '10px',
-      maxWidth: '900px', // Limit max width for centering
-      margin: '0 auto', // Center the grid
-      justifyContent: 'center', // Center the grid items
+      maxWidth: '900px',
+      margin: '0 auto',
+      justifyContent: 'center',
     },
     productGridContainer: {
       display: 'flex',
@@ -285,7 +355,7 @@ const Home = () => {
             value={orderDate}
             onChange={handleDateChange}
             style={styles.datePicker}
-            min={new Date().toISOString().split('T')[0]} // Set minimum date to today
+            min={new Date().toISOString().split('T')[0]}
           />
         </div>
       </div>
@@ -310,16 +380,16 @@ const Home = () => {
               <h3 style={styles.productTitle}>{helado.title}</h3>
               <div style={styles.quantityControl}>
                 <button 
-                  onClick={() => handleDecrement(helado.id)}
+                  onClick={() => handleDecrementHelado(helado.id)}
                   style={{...styles.button, ...styles.decrementButton}}
                 >
                   -
                 </button>
                 <span style={styles.quantity}>
-                  {quantities[helado.id] || 0}
+                  {heladosQuantities[helado.id] || 0}
                 </span>
                 <button 
-                  onClick={() => handleIncrement(helado.id)}
+                  onClick={() => handleIncrementHelado(helado.id)}
                   style={{...styles.button, ...styles.incrementButton}}
                 >
                   +
@@ -338,16 +408,16 @@ const Home = () => {
               <h3 style={styles.productTitle}>{postre.title}</h3>
               <div style={styles.quantityControl}>
                 <button 
-                  onClick={() => handleDecrement(postre.id)}
+                  onClick={() => handleDecrementPostre(postre.id)}
                   style={{...styles.button, ...styles.decrementButton}}
                 >
                   -
                 </button>
                 <span style={styles.quantity}>
-                  {quantities[postre.id] || 0}
+                  {postresQuantities[postre.id] || 0}
                 </span>
                 <button 
-                  onClick={() => handleIncrement(postre.id)}
+                  onClick={() => handleIncrementPostre(postre.id)}
                   style={{...styles.button, ...styles.incrementButton}}
                 >
                   +
@@ -366,16 +436,16 @@ const Home = () => {
               <h3 style={styles.productTitle}>{soft.title}</h3>
               <div style={styles.quantityControl}>
                 <button 
-                  onClick={() => handleDecrement(soft.id)}
+                  onClick={() => handleDecrementSoft(soft.id)}
                   style={{...styles.button, ...styles.decrementButton}}
                 >
                   -
                 </button>
                 <span style={styles.quantity}>
-                  {quantities[soft.id] || 0}
+                  {softsQuantities[soft.id] || 0}
                 </span>
                 <button 
-                  onClick={() => handleIncrement(soft.id)}
+                  onClick={() => handleIncrementSoft(soft.id)}
                   style={{...styles.button, ...styles.incrementButton}}
                 >
                   +
@@ -394,16 +464,16 @@ const Home = () => {
               <h3 style={styles.productTitle}>{termico.title}</h3>
               <div style={styles.quantityControl}>
                 <button 
-                  onClick={() => handleDecrement(termico.id)}
+                  onClick={() => handleDecrementTermico(termico.id)}
                   style={{...styles.button, ...styles.decrementButton}}
                 >
                   -
                 </button>
                 <span style={styles.quantity}>
-                  {quantities[termico.id] || 0}
+                  {termicosQuantities[termico.id] || 0}
                 </span>
                 <button 
-                  onClick={() => handleIncrement(termico.id)}
+                  onClick={() => handleIncrementTermico(termico.id)}
                   style={{...styles.button, ...styles.incrementButton}}
                 >
                   +
@@ -416,7 +486,15 @@ const Home = () => {
 
       <div style={styles.section}>
         <button 
-          onClick={() => console.log('Revisar Pedido')}
+          onClick={() => {
+            console.log({
+              fecha: orderDate,
+              helados: heladosQuantities,
+              postres: postresQuantities,
+              softs: softsQuantities,
+              termicos: termicosQuantities
+            });
+          }}
           style={styles.actionButton}
         >
           Revisar Pedido
