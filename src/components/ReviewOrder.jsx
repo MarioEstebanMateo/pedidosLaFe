@@ -35,70 +35,181 @@ const ReviewOrder = () => {
     
     // Get page dimensions
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     
-    // Add logo - make it smaller (20x20 mm instead of 30x30)
-    doc.addImage(logoLaFe, 'PNG', 10, 10, 20, 20);
+    // Add logo - make it smaller (15x15 mm to save space)
+    doc.addImage(logoLaFe, 'PNG', 10, 7, 15, 15);
     
-    // Add title - center it based on A4 width
-    doc.setFontSize(18);
-    doc.text('Pedido La Fe', pageWidth / 2, 20, { align: 'center' });
+    // Add title - center it based on A4 width but save space
+    doc.setFontSize(16);
+    doc.text('Pedido La Fe', pageWidth / 2, 15, { align: 'center' });
     
-    // Add order details
-    doc.setFontSize(12);
-    doc.text(`Fecha de entrega: ${formatDate(orderData.orderDate)}`, 15, 40);
-    doc.text(`Sucursal: ${orderData.sucursalTitle}`, 15, 47);
+    // Add order details - make them more compact
+    doc.setFontSize(10);
+    doc.text(`Fecha de entrega: ${formatDate(orderData.orderDate)}`, 15, 25);
+    doc.text(`Sucursal: ${orderData.sucursalTitle}`, 15, 30);
     
-    // Add products table
-    const tableData = [];
+    // Count total products to determine layout approach
+    const totalProducts = 
+      orderData.products.helados.length + 
+      orderData.products.postres.length + 
+      orderData.products.softs.length + 
+      orderData.products.termicos.length;
     
-    // Add helados if there are any
-    if (orderData.products.helados.length > 0) {
-      tableData.push(['Tipo', 'Producto', 'Cantidad', 'Kgs']); // Keep Kgs column
-      orderData.products.helados.forEach(item => {
-        // Leave the Kgs value blank for manual filling
-        tableData.push(['Helado', item.title, item.quantity, '']);
-      });
-    }
+    // Always use 2-column layout for more than 10 items
+    // For very large orders (>30), use even smaller font
+    const useMultiColumn = totalProducts > 60;
+    const useTinyFont = totalProducts > 30;
     
-    // Add postres if there are any
-    if (orderData.products.postres.length > 0) {
-      if (tableData.length === 0) tableData.push(['Tipo', 'Producto', 'Cantidad', 'Kgs']);
-      orderData.products.postres.forEach(item => {
-        tableData.push(['Postre', item.title, item.quantity, '']);
-      });
-    }
-    
-    // Add softs if there are any
-    if (orderData.products.softs.length > 0) {
-      if (tableData.length === 0) tableData.push(['Tipo', 'Producto', 'Cantidad', 'Kgs']);
-      orderData.products.softs.forEach(item => {
-        tableData.push(['Soft', item.title, item.quantity, '']);
-      });
-    }
-    
-    // Add termicos if there are any
-    if (orderData.products.termicos.length > 0) {
-      if (tableData.length === 0) tableData.push(['Tipo', 'Producto', 'Cantidad', 'Kgs']);
-      orderData.products.termicos.forEach(item => {
-        tableData.push(['Térmico', item.title, item.quantity, '']);
-      });
-    }
-    
-    if (tableData.length > 0) {
-      // Use the imported autotable function with A4-friendly margins
+    if (useMultiColumn) {
+      // Create left column table data
+      const leftTableData = [['Tipo', 'Producto', 'Cant.', 'Kgs']];
+      // Create right column table data
+      const rightTableData = [['Tipo', 'Producto', 'Cant.', 'Kgs']];
+      
+      // Collect all products into a single array
+      const allProducts = [];
+      
+      if (orderData.products.helados.length > 0) {
+        orderData.products.helados.forEach(item => {
+          allProducts.push(['Helado', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.postres.length > 0) {
+        orderData.products.postres.forEach(item => {
+          allProducts.push(['Postre', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.softs.length > 0) {
+        orderData.products.softs.forEach(item => {
+          allProducts.push(['Soft', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.termicos.length > 0) {
+        orderData.products.termicos.forEach(item => {
+          allProducts.push(['Térmico', item.title, item.quantity, '']);
+        });
+      }
+      
+      // Split products between columns
+      const halfIndex = Math.ceil(allProducts.length / 2);
+      const leftProducts = allProducts.slice(0, halfIndex);
+      const rightProducts = allProducts.slice(halfIndex);
+      
+      // Add products to respective column data
+      leftTableData.push(...leftProducts);
+      rightTableData.push(...rightProducts);
+      
+      // Set starting Y position higher to save space
+      const startY = 35;
+      
+      // Draw left column table with compact settings
       autoTable(doc, {
-        startY: 55,
-        margin: { left: 15, right: 15 },
-        head: [tableData[0]],
-        body: tableData.slice(1),
+        startY: startY,
+        margin: { left: 5, right: pageWidth / 2 + 5 },
+        head: [leftTableData[0]],
+        body: leftTableData.slice(1),
         theme: 'striped',
-        headStyles: { fillColor: [52, 152, 219] },
-        // Make table fit within A4 boundaries
+        headStyles: { 
+          fillColor: [52, 152, 219],
+          fontSize: useTinyFont ? 6 : 7,
+          cellPadding: 1
+        },
         styles: {
-          fontSize: 10,
-          cellPadding: 3
-        }
+          fontSize: useTinyFont ? 6 : 7,
+          cellPadding: useTinyFont ? 0.8 : 1.2,
+          overflow: 'linebreak'
+        },
+        columnStyles: {
+          0: { cellWidth: 14 },         // Tipo column
+          1: { cellWidth: 35 },     // Producto column (auto-width)
+          2: { cellWidth: 15, halign: 'center' }, // Cant column
+          3: { cellWidth: 30, halign: 'center' }  // Kgs column
+        },
+        tableWidth: (pageWidth / 2) - 10
       });
+      
+      // Draw right column table with compact settings
+      autoTable(doc, {
+        startY: startY,
+        margin: { left: pageWidth / 2 + 5, right: 5 },
+        head: [rightTableData[0]],
+        body: rightTableData.slice(1),
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [52, 152, 219],
+          fontSize: useTinyFont ? 6 : 7,
+          cellPadding: 1
+        },
+        styles: {
+          fontSize: useTinyFont ? 6 : 7,
+          cellPadding: useTinyFont ? 0.8 : 1.2,
+          overflow: 'linebreak'
+        },
+        columnStyles: {
+          0: { cellWidth: 14 },         // Tipo column
+          1: { cellWidth: 35 },     // Producto column (auto-width)
+          2: { cellWidth: 15, halign: 'center' }, // Cant column
+          3: { cellWidth: 30, halign: 'center' }  // Kgs column
+        },
+        tableWidth: (pageWidth / 2) - 10
+      });
+    } else {
+      // Simplified single-column layout for smaller orders
+      const tableData = [['Tipo', 'Producto', 'Cant.', 'Kgs']];
+      
+      // Add all products in order by type
+      if (orderData.products.helados.length > 0) {
+        orderData.products.helados.forEach(item => {
+          tableData.push(['Helado', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.postres.length > 0) {
+        orderData.products.postres.forEach(item => {
+          tableData.push(['Postre', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.softs.length > 0) {
+        orderData.products.softs.forEach(item => {
+          tableData.push(['Soft', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.termicos.length > 0) {
+        orderData.products.termicos.forEach(item => {
+          tableData.push(['Térmico', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (tableData.length > 1) {
+        // Use the imported autotable function with optimized settings
+        autoTable(doc, {
+          startY: 35,
+          margin: { left: 15, right: 15 },
+          head: [tableData[0]],
+          body: tableData.slice(1),
+          theme: 'striped',
+          headStyles: { 
+            fillColor: [52, 152, 219],
+            fontSize: 8
+          },
+          styles: {
+            fontSize: 8,
+            cellPadding: 2
+          },
+          columnStyles: {
+            0: { cellWidth: 14 },
+            1: { cellWidth: 35 },
+            2: { cellWidth: 15, halign: 'center' },
+            3: { cellWidth: 30, halign: 'center' }
+          }
+        });
+      }
     }
     
     return doc;
