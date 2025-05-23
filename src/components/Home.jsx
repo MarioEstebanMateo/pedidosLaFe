@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { testSupabaseConnection } from '../db/testSupabase'
 import supabase from '../db/SupabaseClient'
+import { useOrderContext } from '../context/OrderContext'
 
 import logoLaFe from '../assets/img/logo-lafe.png'
 
 const Home = () => {
+  const navigate = useNavigate()
+  const { orderData, updateOrderData } = useOrderContext()
+  
   const [sucursales, setSucursales] = useState([])
   const [helados, setHelados] = useState([])
   const [postres, setPostres] = useState([])
@@ -12,107 +17,114 @@ const Home = () => {
   const [termicos, setTermicos] = useState([])
   
   // Track quantities separately for each product type
-  const [heladosQuantities, setHeladosQuantities] = useState({})
-  const [postresQuantities, setPostresQuantities] = useState({})
-  const [softsQuantities, setSoftsQuantities] = useState({})
-  const [termicosQuantities, setTermicosQuantities] = useState({})
+  const [heladosQuantities, setHeladosQuantities] = useState(orderData.heladosQuantities || {})
+  const [postresQuantities, setPostresQuantities] = useState(orderData.postresQuantities || {})
+  const [softsQuantities, setSoftsQuantities] = useState(orderData.softsQuantities || {})
+  const [termicosQuantities, setTermicosQuantities] = useState(orderData.termicosQuantities || {})
+  const [selectedSucursal, setSelectedSucursal] = useState(orderData.sucursalId || '')
   
-  // Add state for order date - initialize with today's date
-  const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0])
+  // Add state for order date - initialize with today's date or from context
+  const [orderDate, setOrderDate] = useState(orderData.orderDate || new Date().toISOString().split('T')[0])
 
-  // Fetch data from supabase
+  // Fetch data from supabase and initialize once
   useEffect(() => {
-
-      // Call the test function
-  testSupabaseConnection().then(isConnected => {
-    if (isConnected) {
+    // Call the test function
+    testSupabaseConnection().then(isConnected => {
+      if (isConnected) {
         console.log('Supabase is working correctly!')
-    } else {
+      } else {
         console.log('There was an issue with the Supabase connection')
-    }
-  })
+      }
+    })
 
     const fetchData = async () => {
-      const { data: sucursalesData, error: sucursalesError } = await supabase
-        .from('sucursales')
-        .select('*')
+      // Fetch all data first
+      const [
+        { data: sucursalesData, error: sucursalesError },
+        { data: heladosData, error: heladosError },
+        { data: postresData, error: postresError },
+        { data: softsData, error: softsError },
+        { data: termicosData, error: termicosError },
+      ] = await Promise.all([
+        supabase.from('sucursales').select('*'),
+        supabase.from('helados').select('*'),
+        supabase.from('postres').select('*'),
+        supabase.from('softs').select('*'),
+        supabase.from('termicos').select('*')
+      ])
 
+      // Process sucursales
       if (sucursalesError) {
         console.error('Error fetching sucursales:', sucursalesError)
       } else {
         setSucursales(sucursalesData)
       }
 
-      const { data: heladosData, error: heladosError } = await supabase
-        .from('helados')
-        .select('*')
-
+      // Process helados
       if (heladosError) {
         console.error('Error fetching helados:', heladosError)
       } else {
         setHelados(heladosData)
         
-        // Initialize quantities state with all helados set to 0
-        const initialHeladosQuantities = {}
-        heladosData.forEach(helado => {
-          initialHeladosQuantities[helado.id] = 0
-        })
-        setHeladosQuantities(initialHeladosQuantities)
+        // Only initialize if we don't have existing quantities
+        // This preserves quantities when navigating back from review
+        if (!orderData.heladosQuantities || Object.keys(orderData.heladosQuantities).length === 0) {
+          const initialHeladosQuantities = {}
+          heladosData.forEach(helado => {
+            initialHeladosQuantities[helado.id] = 0
+          })
+          setHeladosQuantities(initialHeladosQuantities)
+        }
       }
 
-      const { data: postresData, error: postresError } = await supabase
-        .from('postres')
-        .select('*')
-
+      // Process postres
       if (postresError) {
         console.error('Error fetching postres:', postresError)
       } else {
         setPostres(postresData)
         
-        // Initialize quantities state for postres
-        const initialPostresQuantities = {}
-        postresData.forEach(postre => {
-          initialPostresQuantities[postre.id] = 0
-        })
-        setPostresQuantities(initialPostresQuantities)
+        if (!orderData.postresQuantities || Object.keys(orderData.postresQuantities).length === 0) {
+          const initialPostresQuantities = {}
+          postresData.forEach(postre => {
+            initialPostresQuantities[postre.id] = 0
+          })
+          setPostresQuantities(initialPostresQuantities)
+        }
       }
 
-      const { data: softsData, error: softsError } = await supabase
-        .from('softs')
-        .select('*')
-
+      // Process softs
       if (softsError) {
         console.error('Error fetching softs:', softsError)
       } else {
         setSofts(softsData)
         
-        // Initialize quantities state for softs
-        const initialSoftsQuantities = {}
-        softsData.forEach(soft => {
-          initialSoftsQuantities[soft.id] = 0
-        })
-        setSoftsQuantities(initialSoftsQuantities)
+        if (!orderData.softsQuantities || Object.keys(orderData.softsQuantities).length === 0) {
+          const initialSoftsQuantities = {}
+          softsData.forEach(soft => {
+            initialSoftsQuantities[soft.id] = 0
+          })
+          setSoftsQuantities(initialSoftsQuantities)
+        }
       }
 
-      const { data: termicosData, error: termicosError } = await supabase
-        .from('termicos')
-        .select('*')
-
+      // Process termicos
       if (termicosError) {
         console.error('Error fetching termicos:', termicosError)
       } else {
         setTermicos(termicosData)
         
-        // Initialize quantities state for termicos
-        const initialTermicosQuantities = {}
-        termicosData.forEach(termico => {
-          initialTermicosQuantities[termico.id] = 0
-        })
-        setTermicosQuantities(initialTermicosQuantities)
+        if (!orderData.termicosQuantities || Object.keys(orderData.termicosQuantities).length === 0) {
+          const initialTermicosQuantities = {}
+          termicosData.forEach(termico => {
+            initialTermicosQuantities[termico.id] = 0
+          })
+          setTermicosQuantities(initialTermicosQuantities)
+        }
       }
     }
+
     fetchData()
-  }, [])
+  }, []) // Empty dependency array to run only once on mount
 
   // Handle quantity changes for each product type
   const handleIncrementHelado = (id) => {
@@ -171,9 +183,55 @@ const Home = () => {
     }))
   }
 
-  // Handle date change
+  // Handle date change - update context only when user changes the date
   const handleDateChange = (e) => {
-    setOrderDate(e.target.value)
+    const newDate = e.target.value
+    setOrderDate(newDate)
+    updateOrderData({ orderDate: newDate }) // Update context only when user changes date
+  }
+
+  // Handle sucursal selection
+  const handleSucursalChange = (e) => {
+    const selectedId = e.target.value
+    const selectedTitle = sucursales.find(s => s.id.toString() === selectedId)?.title || ''
+    
+    setSelectedSucursal(selectedId)
+    updateOrderData({ 
+      sucursalId: selectedId,
+      sucursalTitle: selectedTitle
+    })
+  }
+
+  // Handle the "Revisar Pedido" button click
+  const handleReviewOrder = () => {
+    // First, update all products data in context
+    const filteredHelados = helados.filter(h => heladosQuantities[h.id] > 0)
+      .map(h => ({ id: h.id, title: h.title, quantity: heladosQuantities[h.id] }))
+      
+    const filteredPostres = postres.filter(p => postresQuantities[p.id] > 0)
+      .map(p => ({ id: p.id, title: p.title, quantity: postresQuantities[p.id] }))
+      
+    const filteredSofts = softs.filter(s => softsQuantities[s.id] > 0)
+      .map(s => ({ id: s.id, title: s.title, quantity: softsQuantities[s.id] }))
+      
+    const filteredTermicos = termicos.filter(t => termicosQuantities[t.id] > 0)
+      .map(t => ({ id: t.id, title: t.title, quantity: termicosQuantities[t.id] }))
+    
+    updateOrderData({
+      heladosQuantities,
+      postresQuantities,
+      softsQuantities,
+      termicosQuantities,
+      products: {
+        helados: filteredHelados,
+        postres: filteredPostres,
+        softs: filteredSofts,
+        termicos: filteredTermicos
+      }
+    })
+    
+    // Navigate to the review page
+    navigate('/review')
   }
 
   // Mobile-responsive styling
@@ -363,7 +421,11 @@ const Home = () => {
       <div style={styles.section}>
         <h2 style={styles.sectionTitle}>Selecciona la Sucursal</h2>
         <div style={styles.formControl}>
-          <select style={styles.select}>
+          <select 
+            style={styles.select}
+            value={selectedSucursal}
+            onChange={handleSucursalChange}
+          >
             <option value="">Selecciona una sucursal</option>
             {sucursales.map((sucursal) => (
               <option key={sucursal.id} value={sucursal.id}>{sucursal.title}</option>
@@ -486,16 +548,9 @@ const Home = () => {
 
       <div style={styles.section}>
         <button 
-          onClick={() => {
-            console.log({
-              fecha: orderDate,
-              helados: heladosQuantities,
-              postres: postresQuantities,
-              softs: softsQuantities,
-              termicos: termicosQuantities
-            });
-          }}
+          onClick={handleReviewOrder}
           style={styles.actionButton}
+          disabled={!selectedSucursal} // Disable if no sucursal is selected
         >
           Revisar Pedido
         </button>
