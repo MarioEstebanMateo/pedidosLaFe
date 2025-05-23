@@ -116,12 +116,16 @@ const ReviewOrder = () => {
         headStyles: { 
           fillColor: [52, 152, 219],
           fontSize: useTinyFont ? 6 : 7,
-          cellPadding: 1
+          cellPadding: 1,
+          lineWidth: 0.1,  // Add this for border width
+          lineColor: [0, 0, 0]  // Add this for border color
         },
         styles: {
           fontSize: useTinyFont ? 6 : 7,
           cellPadding: useTinyFont ? 0.8 : 1.2,
-          overflow: 'linebreak'
+          overflow: 'linebreak',
+          lineWidth: 0.1,  // Add this for border width
+          lineColor: [0, 0, 0]  // Add this for border color
         },
         columnStyles: {
           0: { cellWidth: 14 },         // Tipo column
@@ -142,12 +146,16 @@ const ReviewOrder = () => {
         headStyles: { 
           fillColor: [52, 152, 219],
           fontSize: useTinyFont ? 6 : 7,
-          cellPadding: 1
+          cellPadding: 1,
+          lineWidth: 0.1,  // Add this for border width
+          lineColor: [0, 0, 0]  // Add this for border color
         },
         styles: {
           fontSize: useTinyFont ? 6 : 7,
           cellPadding: useTinyFont ? 0.8 : 1.2,
-          overflow: 'linebreak'
+          overflow: 'linebreak',
+          lineWidth: 0.1,  // Add this for border width
+          lineColor: [0, 0, 0]  // Add this for border color
         },
         columnStyles: {
           0: { cellWidth: 14 },         // Tipo column
@@ -196,11 +204,15 @@ const ReviewOrder = () => {
           theme: 'striped',
           headStyles: { 
             fillColor: [52, 152, 219],
-            fontSize: 8
+            fontSize: 8,
+            lineWidth: 0.1,  // Add this for border width
+            lineColor: [0, 0, 0]  // Add this for border color
           },
           styles: {
             fontSize: 8,
-            cellPadding: 2
+            cellPadding: 2,
+            lineWidth: 0.1,  // Add this for border width
+            lineColor: [0, 0, 0]  // Add this for border color
           },
           columnStyles: {
             0: { cellWidth: 14 },
