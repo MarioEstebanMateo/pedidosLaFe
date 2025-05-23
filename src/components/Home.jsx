@@ -20,6 +20,9 @@ const Home = () => {
   const [softs, setSofts] = useState([])
   const [termicos, setTermicos] = useState([])
   const [quantities, setQuantities] = useState({})
+  
+  // Add state for order date - initialize with today's date
+  const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0])
 
   // Fetch data from supabase
   useEffect(() => {
@@ -98,6 +101,11 @@ const Home = () => {
     }))
   }
 
+  // Handle date change
+  const handleDateChange = (e) => {
+    setOrderDate(e.target.value)
+  }
+
   // Mobile-responsive styling
   const styles = {
     container: {
@@ -130,20 +138,47 @@ const Home = () => {
       marginBottom: '12px',
       borderBottom: '2px solid #f1f1f1',
       paddingBottom: '8px',
+      textAlign: 'center',
+    },
+    formControl: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      width: '100%',
     },
     select: {
       padding: '10px',
       borderRadius: '5px',
       border: '1px solid #ddd',
-      width: '100%',
+      width: 'auto',
+      minWidth: '200px',
       maxWidth: '100%',
       marginBottom: '20px',
-      fontSize: '16px', // Larger font size for mobile touch
+      fontSize: '16px',
+    },
+    datePicker: {
+      padding: '10px',
+      borderRadius: '5px',
+      border: '1px solid #ddd',
+      width: 'auto',
+      minWidth: '200px',
+      maxWidth: '100%',
+      marginBottom: '20px',
+      fontSize: '16px',
+      fontFamily: 'Arial, sans-serif',
     },
     productGrid: {
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
       gap: '10px',
+      maxWidth: '900px', // Limit max width for centering
+      margin: '0 auto', // Center the grid
+      justifyContent: 'center', // Center the grid items
+    },
+    productGridContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100%',
     },
     productCard: {
       border: '1px solid #eee',
@@ -174,7 +209,6 @@ const Home = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      // Improved touch target for mobile
       minWidth: '36px',
       minHeight: '36px',
     },
@@ -195,15 +229,41 @@ const Home = () => {
     },
     section: {
       marginBottom: '25px',
+      textAlign: 'center',
     },
-    // Add media queries handling for different screen sizes
+    label: {
+      display: 'block',
+      marginBottom: '5px',
+      fontSize: 'clamp(14px, 3vw, 16px)',
+      fontWeight: 'bold',
+      color: '#2c3e50',
+      textAlign: 'center',
+    },
+    actionButton: {
+      backgroundColor: '#3498db',
+      color: 'white',
+      width: '100%', 
+      maxWidth: '300px',
+      padding: '12px',
+      fontSize: '18px',
+      borderRadius: '5px',
+      border: 'none',
+      cursor: 'pointer',
+      fontWeight: 'bold',
+    },
     '@media (max-width: 480px)': {
       productGrid: {
-        gridTemplateColumns: '1fr 1fr', // 2 columns on very small screens
+        gridTemplateColumns: '1fr 1fr',
       },
       button: {
-        width: '44px', // Larger buttons on very small screens
+        width: '44px',
         height: '44px',
+      },
+      select: {
+        minWidth: '180px',
+      },
+      datePicker: {
+        minWidth: '180px',
       }
     }
   }
@@ -216,12 +276,30 @@ const Home = () => {
       </div>
       
       <div style={styles.section}>
+        <h2 style={styles.sectionTitle}>Selecciona la Fecha del Pedido</h2>
+        <div style={styles.formControl}>
+          <label style={styles.label} htmlFor="orderDate">Fecha de entrega:</label>
+          <input
+            type="date"
+            id="orderDate"
+            value={orderDate}
+            onChange={handleDateChange}
+            style={styles.datePicker}
+            min={new Date().toISOString().split('T')[0]} // Set minimum date to today
+          />
+        </div>
+      </div>
+      
+      <div style={styles.section}>
         <h2 style={styles.sectionTitle}>Selecciona la Sucursal</h2>
-        <select style={styles.select}>
-          {sucursales.map((sucursal) => (
-            <option key={sucursal.id} value={sucursal.id}>{sucursal.title}</option>
-          ))}
-        </select>
+        <div style={styles.formControl}>
+          <select style={styles.select}>
+            <option value="">Selecciona una sucursal</option>
+            {sucursales.map((sucursal) => (
+              <option key={sucursal.id} value={sucursal.id}>{sucursal.title}</option>
+            ))}
+          </select>
+        </div>
       </div>
       
       <div style={styles.section}>
@@ -278,60 +356,71 @@ const Home = () => {
             </div>
           ))}
         </div>
-    </div>
-
-    <div style={styles.section}></div>
-      <h2 style={styles.sectionTitle}>Selecciona los Softs</h2>
-      <div style={styles.productGrid}>
-        {softs.map((soft) => (
-          <div key={soft.id} style={styles.productCard}>
-            <h3 style={styles.productTitle}>{soft.title}</h3>
-            <div style={styles.quantityControl}>
-              <button 
-                onClick={() => handleDecrement(soft.id)}
-                style={{...styles.button, ...styles.decrementButton}}
-              >
-                -
-              </button>
-              <span style={styles.quantity}>
-                {quantities[soft.id] || 0}
-              </span>
-              <button 
-                onClick={() => handleIncrement(soft.id)}
-                style={{...styles.button, ...styles.incrementButton}}
-              >
-                +
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
 
-      <div style={styles.section}></div>
-      <h2 style={styles.sectionTitle}>Selecciona los Termicos</h2>
-      <div style={styles.productGrid}>
-        {termicos.map((termico) => (
-          <div key={termico.id} style={styles.productCard}>
-            <h3 style={styles.productTitle}>{termico.title}</h3>
-            <div style={styles.quantityControl}>
-              <button 
-                onClick={() => handleDecrement(termico.id)}
-                style={{...styles.button, ...styles.decrementButton}}
-              >
-                -
-              </button>
-              <span style={styles.quantity}>
-                {quantities[termico.id] || 0}
-              </span>
-              <button 
-                onClick={() => handleIncrement(termico.id)}
-                style={{...styles.button, ...styles.incrementButton}}
-              >
-                +
-              </button>
+      <div style={styles.section}>
+        <h2 style={styles.sectionTitle}>Selecciona los Softs</h2>
+        <div style={styles.productGrid}>
+          {softs.map((soft) => (
+            <div key={soft.id} style={styles.productCard}>
+              <h3 style={styles.productTitle}>{soft.title}</h3>
+              <div style={styles.quantityControl}>
+                <button 
+                  onClick={() => handleDecrement(soft.id)}
+                  style={{...styles.button, ...styles.decrementButton}}
+                >
+                  -
+                </button>
+                <span style={styles.quantity}>
+                  {quantities[soft.id] || 0}
+                </span>
+                <button 
+                  onClick={() => handleIncrement(soft.id)}
+                  style={{...styles.button, ...styles.incrementButton}}
+                >
+                  +
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+      </div>
+
+      <div style={styles.section}>
+        <h2 style={styles.sectionTitle}>Selecciona los Termicos</h2>
+        <div style={styles.productGrid}>
+          {termicos.map((termico) => (
+            <div key={termico.id} style={styles.productCard}>
+              <h3 style={styles.productTitle}>{termico.title}</h3>
+              <div style={styles.quantityControl}>
+                <button 
+                  onClick={() => handleDecrement(termico.id)}
+                  style={{...styles.button, ...styles.decrementButton}}
+                >
+                  -
+                </button>
+                <span style={styles.quantity}>
+                  {quantities[termico.id] || 0}
+                </span>
+                <button 
+                  onClick={() => handleIncrement(termico.id)}
+                  style={{...styles.button, ...styles.incrementButton}}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={styles.section}>
+        <button 
+          onClick={() => console.log('Revisar Pedido')}
+          style={styles.actionButton}
+        >
+          Revisar Pedido
+        </button>
       </div>
     </div>
   )
