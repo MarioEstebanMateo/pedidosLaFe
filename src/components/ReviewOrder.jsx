@@ -145,6 +145,13 @@ const ReviewOrder = () => {
         });
       }
       
+      // Add missing termicos category
+      if (orderData.products.termicos.length > 0) {
+        orderData.products.termicos.forEach(item => {
+          allProducts.push(['Térmico', item.title, item.quantity, '']);
+        });
+      }
+      
       // Split products between columns
       const halfIndex = Math.ceil(allProducts.length / 2);
       const leftProducts = allProducts.slice(0, halfIndex);
@@ -284,6 +291,13 @@ const ReviewOrder = () => {
       if (orderData.products.barritas.length > 0) {
         orderData.products.barritas.forEach(item => {
           tableData.push(['Barrita', item.title, item.quantity, '']);
+        });
+      }
+      
+      // Add missing termicos category
+      if (orderData.products.termicos.length > 0) {
+        orderData.products.termicos.forEach(item => {
+          tableData.push(['Térmico', item.title, item.quantity, '']);
         });
       }
       
