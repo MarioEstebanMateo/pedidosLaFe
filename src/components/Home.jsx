@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { testSupabaseConnection } from '../db/testSupabase'
 import supabase from '../db/SupabaseClient'
 import { useOrderContext } from '../context/OrderContext'
+import Swal from 'sweetalert2'
 
 import logoLaFe from '../assets/img/logo-lafe.png'
 
@@ -206,7 +207,13 @@ const Home = () => {
   const handleReviewOrder = () => {
     // Validation: check if a sucursal is selected
     if (!selectedSucursal) {
-      alert('Por favor selecciona una sucursal antes de continuar')
+      Swal.fire({
+        title: 'Selecciona una sucursal',
+        text: 'Por favor selecciona una sucursal antes de continuar',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#3498db'
+      })
       return
     }
     
@@ -217,7 +224,13 @@ const Home = () => {
       Object.values(termicosQuantities).some(qty => qty > 0)
     
     if (!hasAnyProducts) {
-      alert('Por favor selecciona al menos un producto para tu pedido')
+      Swal.fire({
+        title: 'No hay productos',
+        text: 'Por favor selecciona al menos un producto para tu pedido',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#3498db'
+      })
       return
     }
 
