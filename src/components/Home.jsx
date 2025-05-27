@@ -751,11 +751,14 @@ const Home = () => {
   const renderProductSection = (title, products, quantities, handleIncrement, handleDecrement) => {
     if (!products || products.length === 0) return null;
     
+    // Sort products by id in ascending order
+    const sortedProducts = [...products].sort((a, b) => a.id - b.id);
+    
     return (
       <div style={styles.section}>
         <h2 style={styles.sectionTitle}>{title}</h2>
         <div style={styles.productGrid}>
-          {products.map((product) => (
+          {sortedProducts.map((product) => (
             <div key={product.id} style={styles.productCard}>
               <h3 style={styles.productTitle}>{product.title}</h3>
               <div style={styles.quantityControl}>
