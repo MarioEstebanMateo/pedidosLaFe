@@ -7,15 +7,33 @@ export const OrderProvider = ({ children }) => {
     orderDate: new Date().toISOString().split('T')[0],
     sucursalId: '',
     sucursalTitle: '',
+    // Order the quantities in the same sequence
     heladosQuantities: {},
+    palitosQuantities: {},
     postresQuantities: {},
+    crockerQuantities: {},
+    dieteticosQuantities: {},
+    buffetQuantities: {},
     softsQuantities: {},
+    dulcesQuantities: {},
+    paletasQuantities: {},
+    bitesQuantities: {},
     termicosQuantities: {},
+    barritasQuantities: {},
     products: {
+      // Order the products in the same sequence
       helados: [],
+      palitos: [],
       postres: [],
+      crocker: [],
+      dieteticos: [],
+      buffet: [],
       softs: [],
-      termicos: []
+      dulces: [],
+      paletas: [],
+      bites: [],
+      termicos: [],
+      barritas: []
     }
   })
 

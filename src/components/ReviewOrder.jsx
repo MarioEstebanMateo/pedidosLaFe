@@ -5,14 +5,14 @@ import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import logoLaFe from '../assets/img/logo-lafe.png'
 import iconWhatsapp from '../assets/img/iconWhatsapp.png'
-import iconPdf from '../assets/img/iconPdf.png' // You'll need to add this image to your assets
+import iconPdf from '../assets/img/iconPdf.png'
 
 const ReviewOrder = () => {
   const { orderData } = useOrderContext()
   const navigate = useNavigate()
   const pdfRef = useRef(null)
   
-  // Check if any products were selected
+  // Check if any products were selected across all categories
   const hasProducts = Object.values(orderData.products).some(arr => arr.length > 0)
   
   // Format date for display
@@ -25,7 +25,7 @@ const ReviewOrder = () => {
     navigate('/')
   }
   
-  // Update the PDF generation function
+  // Update the PDF generation function to include new categories
   const generatePDF = () => {
     // Create a new document with A4 dimensions (210 x 297 mm)
     const doc = new jsPDF({
@@ -54,7 +54,16 @@ const ReviewOrder = () => {
       orderData.products.helados.length + 
       orderData.products.postres.length + 
       orderData.products.softs.length + 
-      orderData.products.termicos.length;
+      orderData.products.termicos.length +
+      // Add new categories
+      orderData.products.palitos.length + 
+      orderData.products.crocker.length + 
+      orderData.products.dieteticos.length + 
+      orderData.products.buffet.length + 
+      orderData.products.dulces.length + 
+      orderData.products.paletas.length + 
+      orderData.products.bites.length + 
+      orderData.products.barritas.length;
     
     // Always use 2-column layout for more than 10 items
     // For very large orders (>30), use even smaller font
@@ -76,9 +85,33 @@ const ReviewOrder = () => {
         });
       }
       
+      if (orderData.products.palitos.length > 0) {
+        orderData.products.palitos.forEach(item => {
+          allProducts.push(['Palito', item.title, item.quantity, '']);
+        });
+      }
+      
       if (orderData.products.postres.length > 0) {
         orderData.products.postres.forEach(item => {
           allProducts.push(['Postre', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.crocker.length > 0) {
+        orderData.products.crocker.forEach(item => {
+          allProducts.push(['Crocker', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.dieteticos.length > 0) {
+        orderData.products.dieteticos.forEach(item => {
+          allProducts.push(['Dietético', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.buffet.length > 0) {
+        orderData.products.buffet.forEach(item => {
+          allProducts.push(['Buffet', item.title, item.quantity, '']);
         });
       }
       
@@ -88,9 +121,27 @@ const ReviewOrder = () => {
         });
       }
       
-      if (orderData.products.termicos.length > 0) {
-        orderData.products.termicos.forEach(item => {
-          allProducts.push(['Térmico', item.title, item.quantity, '']);
+      if (orderData.products.dulces.length > 0) {
+        orderData.products.dulces.forEach(item => {
+          allProducts.push(['Dulce', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.paletas.length > 0) {
+        orderData.products.paletas.forEach(item => {
+          allProducts.push(['Paleta', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.bites.length > 0) {
+        orderData.products.bites.forEach(item => {
+          allProducts.push(['Bite', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.barritas.length > 0) {
+        orderData.products.barritas.forEach(item => {
+          allProducts.push(['Barrita', item.title, item.quantity, '']);
         });
       }
       
@@ -117,21 +168,21 @@ const ReviewOrder = () => {
           fillColor: [52, 152, 219],
           fontSize: useTinyFont ? 6 : 7,
           cellPadding: 1,
-          lineWidth: 0.1,  // Add this for border width
-          lineColor: [0, 0, 0]  // Add this for border color
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0]
         },
         styles: {
           fontSize: useTinyFont ? 6 : 7,
           cellPadding: useTinyFont ? 0.8 : 1.2,
           overflow: 'linebreak',
-          lineWidth: 0.1,  // Add this for border width
-          lineColor: [0, 0, 0]  // Add this for border color
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0]
         },
         columnStyles: {
-          0: { cellWidth: 14 },         // Tipo column
-          1: { cellWidth: 35 },     // Producto column (auto-width)
-          2: { cellWidth: 15, halign: 'center' }, // Cant column
-          3: { cellWidth: 30, halign: 'center' }  // Kgs column
+          0: { cellWidth: 14 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 15, halign: 'center' },
+          3: { cellWidth: 30, halign: 'center' }
         },
         tableWidth: (pageWidth / 2) - 10
       });
@@ -147,21 +198,21 @@ const ReviewOrder = () => {
           fillColor: [52, 152, 219],
           fontSize: useTinyFont ? 6 : 7,
           cellPadding: 1,
-          lineWidth: 0.1,  // Add this for border width
-          lineColor: [0, 0, 0]  // Add this for border color
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0]
         },
         styles: {
           fontSize: useTinyFont ? 6 : 7,
           cellPadding: useTinyFont ? 0.8 : 1.2,
           overflow: 'linebreak',
-          lineWidth: 0.1,  // Add this for border width
-          lineColor: [0, 0, 0]  // Add this for border color
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0]
         },
         columnStyles: {
-          0: { cellWidth: 14 },         // Tipo column
-          1: { cellWidth: 35 },     // Producto column (auto-width)
-          2: { cellWidth: 15, halign: 'center' }, // Cant column
-          3: { cellWidth: 30, halign: 'center' }  // Kgs column
+          0: { cellWidth: 14 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 15, halign: 'center' },
+          3: { cellWidth: 30, halign: 'center' }
         },
         tableWidth: (pageWidth / 2) - 10
       });
@@ -176,9 +227,33 @@ const ReviewOrder = () => {
         });
       }
       
+      if (orderData.products.palitos.length > 0) {
+        orderData.products.palitos.forEach(item => {
+          tableData.push(['Palito', item.title, item.quantity, '']);
+        });
+      }
+      
       if (orderData.products.postres.length > 0) {
         orderData.products.postres.forEach(item => {
           tableData.push(['Postre', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.crocker.length > 0) {
+        orderData.products.crocker.forEach(item => {
+          tableData.push(['Crocker', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.dieteticos.length > 0) {
+        orderData.products.dieteticos.forEach(item => {
+          tableData.push(['Dietético', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.buffet.length > 0) {
+        orderData.products.buffet.forEach(item => {
+          tableData.push(['Buffet', item.title, item.quantity, '']);
         });
       }
       
@@ -188,9 +263,27 @@ const ReviewOrder = () => {
         });
       }
       
-      if (orderData.products.termicos.length > 0) {
-        orderData.products.termicos.forEach(item => {
-          tableData.push(['Térmico', item.title, item.quantity, '']);
+      if (orderData.products.dulces.length > 0) {
+        orderData.products.dulces.forEach(item => {
+          tableData.push(['Dulce', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.paletas.length > 0) {
+        orderData.products.paletas.forEach(item => {
+          tableData.push(['Paleta', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.bites.length > 0) {
+        orderData.products.bites.forEach(item => {
+          tableData.push(['Bite', item.title, item.quantity, '']);
+        });
+      }
+      
+      if (orderData.products.barritas.length > 0) {
+        orderData.products.barritas.forEach(item => {
+          tableData.push(['Barrita', item.title, item.quantity, '']);
         });
       }
       
@@ -205,14 +298,14 @@ const ReviewOrder = () => {
           headStyles: { 
             fillColor: [52, 152, 219],
             fontSize: 8,
-            lineWidth: 0.1,  // Add this for border width
-            lineColor: [0, 0, 0]  // Add this for border color
+            lineWidth: 0.1,
+            lineColor: [0, 0, 0]
           },
           styles: {
             fontSize: 8,
             cellPadding: 2,
-            lineWidth: 0.1,  // Add this for border width
-            lineColor: [0, 0, 0]  // Add this for border color
+            lineWidth: 0.1,
+            lineColor: [0, 0, 0]
           },
           columnStyles: {
             0: { cellWidth: 14 },
@@ -288,6 +381,22 @@ const ReviewOrder = () => {
     link.click()
     document.body.removeChild(link)
   }
+  
+  // Helper function to render product rows
+  const renderProductRows = (productType, displayName) => {
+    if (!orderData.products[productType] || orderData.products[productType].length === 0) {
+      return null;
+    }
+    
+    return orderData.products[productType].map((item, index) => (
+      <tr key={`${productType}-${item.id}`} style={index % 2 === 0 ? styles.tr : styles.trAlternate}>
+        <td style={styles.td}>{displayName}</td>
+        <td style={styles.td}>{item.title}</td>
+        <td style={styles.td}>{item.quantity}</td>
+        <td style={styles.td}>{/* Empty cell for Kgs */}</td>
+      </tr>
+    ));
+  };
   
   // Styles (similar to your existing styles)
   const styles = {
@@ -440,41 +549,17 @@ const ReviewOrder = () => {
               </tr>
             </thead>
             <tbody>
-              {orderData.products.helados.map((item, index) => (
-                <tr key={`helado-${item.id}`} style={index % 2 === 0 ? styles.tr : styles.trAlternate}>
-                  <td style={styles.td}>Helado</td>
-                  <td style={styles.td}>{item.title}</td>
-                  <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}>{/* Empty cell for Kgs */}</td>
-                </tr>
-              ))}
-              
-              {orderData.products.postres.map((item, index) => (
-                <tr key={`postre-${item.id}`} style={index % 2 === 0 ? styles.tr : styles.trAlternate}>
-                  <td style={styles.td}>Postre</td>
-                  <td style={styles.td}>{item.title}</td>
-                  <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}>{/* Empty cell for Kgs */}</td>
-                </tr>
-              ))}
-              
-              {orderData.products.softs.map((item, index) => (
-                <tr key={`soft-${item.id}`} style={index % 2 === 0 ? styles.tr : styles.trAlternate}>
-                  <td style={styles.td}>Soft</td>
-                  <td style={styles.td}>{item.title}</td>
-                  <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}>{/* Empty cell for Kgs */}</td>
-                </tr>
-              ))}
-              
-              {orderData.products.termicos.map((item, index) => (
-                <tr key={`termico-${item.id}`} style={index % 2 === 0 ? styles.tr : styles.trAlternate}>
-                  <td style={styles.td}>Térmico</td>
-                  <td style={styles.td}>{item.title}</td>
-                  <td style={styles.td}>{item.quantity}</td>
-                  <td style={styles.td}>{/* Empty cell for Kgs */}</td>
-                </tr>
-              ))}
+              {renderProductRows('helados', 'Helado')}
+              {renderProductRows('palitos', 'Palito')}
+              {renderProductRows('postres', 'Postre')}
+              {renderProductRows('crocker', 'Crocker')}
+              {renderProductRows('dieteticos', 'Dietético')}
+              {renderProductRows('buffet', 'Buffet')}
+              {renderProductRows('softs', 'Soft')}
+              {renderProductRows('dulces', 'Dulce')}
+              {renderProductRows('paletas', 'Paleta')}
+              {renderProductRows('bites', 'Bite')}
+              {renderProductRows('termicos', 'Térmico')}
             </tbody>
           </table>
         </div>
@@ -498,7 +583,6 @@ const ReviewOrder = () => {
               onClick={handleSavePDF}
               style={{...styles.button, ...styles.pdfButton}}
             >
-              {/* If you don't have a PDF icon, you can use text only */}
               {iconPdf && <img src={iconPdf} alt="PDF" style={styles.pdfIcon} />}
               Guardar PDF
             </button>

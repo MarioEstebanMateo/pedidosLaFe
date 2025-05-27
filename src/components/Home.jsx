@@ -16,12 +16,30 @@ const Home = () => {
   const [postres, setPostres] = useState([])
   const [softs, setSofts] = useState([])
   const [termicos, setTermicos] = useState([])
+  // Add new category states
+  const [palitos, setPalitos] = useState([])
+  const [crocker, setCrocker] = useState([])
+  const [dieteticos, setDieteticos] = useState([])
+  const [buffet, setBuffet] = useState([])
+  const [dulces, setDulces] = useState([])
+  const [paletas, setPaletas] = useState([])
+  const [bites, setBites] = useState([])
+  const [barritas, setBarritas] = useState([])
   
   // Track quantities separately for each product type
   const [heladosQuantities, setHeladosQuantities] = useState(orderData.heladosQuantities || {})
   const [postresQuantities, setPostresQuantities] = useState(orderData.postresQuantities || {})
   const [softsQuantities, setSoftsQuantities] = useState(orderData.softsQuantities || {})
   const [termicosQuantities, setTermicosQuantities] = useState(orderData.termicosQuantities || {})
+  // Add new category quantities
+  const [palitosQuantities, setPalitosQuantities] = useState(orderData.palitosQuantities || {})
+  const [crockerQuantities, setCrockerQuantities] = useState(orderData.crockerQuantities || {})
+  const [dieteticosQuantities, setDieteticosQuantities] = useState(orderData.dieteticosQuantities || {})
+  const [buffetQuantities, setBuffetQuantities] = useState(orderData.buffetQuantities || {})
+  const [dulcesQuantities, setDulcesQuantities] = useState(orderData.dulcesQuantities || {})
+  const [paletasQuantities, setPaletasQuantities] = useState(orderData.paletasQuantities || {})
+  const [bitesQuantities, setBitesQuantities] = useState(orderData.bitesQuantities || {})
+  const [barritasQuantities, setBarritasQuantities] = useState(orderData.barritasQuantities || {})
   const [selectedSucursal, setSelectedSucursal] = useState(orderData.sucursalId || '')
   
   // Add state for order date - initialize with today's date or from context
@@ -46,12 +64,30 @@ const Home = () => {
         { data: postresData, error: postresError },
         { data: softsData, error: softsError },
         { data: termicosData, error: termicosError },
+        // Add new category data fetching
+        { data: palitosData, error: palitosError },
+        { data: crockerData, error: crockerError },
+        { data: dieteticosData, error: dieteticosError },
+        { data: buffetData, error: buffetError },
+        { data: dulcesData, error: dulcesError },
+        { data: paletasData, error: paletasError },
+        { data: bitesData, error: bitesError },
+        { data: barritasData, error: barritasError },
       ] = await Promise.all([
         supabase.from('sucursales').select('*'),
         supabase.from('helados').select('*'),
         supabase.from('postres').select('*'),
         supabase.from('softs').select('*'),
-        supabase.from('termicos').select('*')
+        supabase.from('termicos').select('*'),
+        // Add new category queries
+        supabase.from('palitos').select('*'),
+        supabase.from('crocker').select('*'),
+        supabase.from('dieteticos').select('*'),
+        supabase.from('buffet').select('*'),
+        supabase.from('dulces').select('*'),
+        supabase.from('paletas').select('*'),
+        supabase.from('bites').select('*'),
+        supabase.from('barritas').select('*')
       ])
 
       // Process sucursales
@@ -122,6 +158,126 @@ const Home = () => {
           setTermicosQuantities(initialTermicosQuantities)
         }
       }
+
+      // Process palitos
+      if (palitosError) {
+        console.error('Error fetching palitos:', palitosError)
+      } else {
+        setPalitos(palitosData)
+        
+        if (!orderData.palitosQuantities || Object.keys(orderData.palitosQuantities).length === 0) {
+          const initialPalitosQuantities = {}
+          palitosData.forEach(item => {
+            initialPalitosQuantities[item.id] = 0
+          })
+          setPalitosQuantities(initialPalitosQuantities)
+        }
+      }
+
+      // Process crocker
+      if (crockerError) {
+        console.error('Error fetching crocker:', crockerError)
+      } else {
+        setCrocker(crockerData)
+        
+        if (!orderData.crockerQuantities || Object.keys(orderData.crockerQuantities).length === 0) {
+          const initialCrockerQuantities = {}
+          crockerData.forEach(item => {
+            initialCrockerQuantities[item.id] = 0
+          })
+          setCrockerQuantities(initialCrockerQuantities)
+        }
+      }
+
+      // Process dieteticos
+      if (dieteticosError) {
+        console.error('Error fetching dieteticos:', dieteticosError)
+      } else {
+        setDieteticos(dieteticosData)
+        
+        if (!orderData.dieteticosQuantities || Object.keys(orderData.dieteticosQuantities).length === 0) {
+          const initialDieteticosQuantities = {}
+          dieteticosData.forEach(item => {
+            initialDieteticosQuantities[item.id] = 0
+          })
+          setDieteticosQuantities(initialDieteticosQuantities)
+        }
+      }
+
+      // Process buffet
+      if (buffetError) {
+        console.error('Error fetching buffet:', buffetError)
+      } else {
+        setBuffet(buffetData)
+        
+        if (!orderData.buffetQuantities || Object.keys(orderData.buffetQuantities).length === 0) {
+          const initialBuffetQuantities = {}
+          buffetData.forEach(item => {
+            initialBuffetQuantities[item.id] = 0
+          })
+          setBuffetQuantities(initialBuffetQuantities)
+        }
+      }
+
+      // Process dulces
+      if (dulcesError) {
+        console.error('Error fetching dulces:', dulcesError)
+      } else {
+        setDulces(dulcesData)
+        
+        if (!orderData.dulcesQuantities || Object.keys(orderData.dulcesQuantities).length === 0) {
+          const initialDulcesQuantities = {}
+          dulcesData.forEach(item => {
+            initialDulcesQuantities[item.id] = 0
+          })
+          setDulcesQuantities(initialDulcesQuantities)
+        }
+      }
+
+      // Process paletas
+      if (paletasError) {
+        console.error('Error fetching paletas:', paletasError)
+      } else {
+        setPaletas(paletasData)
+        
+        if (!orderData.paletasQuantities || Object.keys(orderData.paletasQuantities).length === 0) {
+          const initialPaletasQuantities = {}
+          paletasData.forEach(item => {
+            initialPaletasQuantities[item.id] = 0
+          })
+          setPaletasQuantities(initialPaletasQuantities)
+        }
+      }
+
+      // Process bites
+      if (bitesError) {
+        console.error('Error fetching bites:', bitesError)
+      } else {
+        setBites(bitesData)
+        
+        if (!orderData.bitesQuantities || Object.keys(orderData.bitesQuantities).length === 0) {
+          const initialBitesQuantities = {}
+          bitesData.forEach(item => {
+            initialBitesQuantities[item.id] = 0
+          })
+          setBitesQuantities(initialBitesQuantities)
+        }
+      }
+
+      // Process barritas
+      if (barritasError) {
+        console.error('Error fetching barritas:', barritasError)
+      } else {
+        setBarritas(barritasData)
+        
+        if (!orderData.barritasQuantities || Object.keys(orderData.barritasQuantities).length === 0) {
+          const initialBarritasQuantities = {}
+          barritasData.forEach(item => {
+            initialBarritasQuantities[item.id] = 0
+          })
+          setBarritasQuantities(initialBarritasQuantities)
+        }
+      }
     }
 
     fetchData()
@@ -184,6 +340,119 @@ const Home = () => {
     }))
   }
 
+  // Handle increment/decrement for new categories
+  const handleIncrementPalito = (id) => {
+    setPalitosQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementPalito = (id) => {
+    setPalitosQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+
+  const handleIncrementCrocker = (id) => {
+    setCrockerQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementCrocker = (id) => {
+    setCrockerQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+
+  const handleIncrementDietetico = (id) => {
+    setDieteticosQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementDietetico = (id) => {
+    setDieteticosQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+
+  const handleIncrementBuffet = (id) => {
+    setBuffetQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementBuffet = (id) => {
+    setBuffetQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+
+  const handleIncrementDulce = (id) => {
+    setDulcesQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementDulce = (id) => {
+    setDulcesQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+
+  const handleIncrementPaleta = (id) => {
+    setPaletasQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementPaleta = (id) => {
+    setPaletasQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+
+  const handleIncrementBite = (id) => {
+    setBitesQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementBite = (id) => {
+    setBitesQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+
+  const handleIncrementBarrita = (id) => {
+    setBarritasQuantities(prev => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1
+    }))
+  }
+
+  const handleDecrementBarrita = (id) => {
+    setBarritasQuantities(prev => ({
+      ...prev,
+      [id]: Math.max(0, (prev[id] || 0) - 1)
+    }))
+  }
+
   // Handle date change - update context only when user changes the date
   const handleDateChange = (e) => {
     const newDate = e.target.value
@@ -221,7 +490,16 @@ const Home = () => {
     const hasAnyProducts = Object.values(heladosQuantities).some(qty => qty > 0) ||
       Object.values(postresQuantities).some(qty => qty > 0) ||
       Object.values(softsQuantities).some(qty => qty > 0) ||
-      Object.values(termicosQuantities).some(qty => qty > 0)
+      Object.values(termicosQuantities).some(qty => qty > 0) ||
+      // Add checks for new categories
+      Object.values(palitosQuantities).some(qty => qty > 0) ||
+      Object.values(crockerQuantities).some(qty => qty > 0) ||
+      Object.values(dieteticosQuantities).some(qty => qty > 0) ||
+      Object.values(buffetQuantities).some(qty => qty > 0) ||
+      Object.values(dulcesQuantities).some(qty => qty > 0) ||
+      Object.values(paletasQuantities).some(qty => qty > 0) ||
+      Object.values(bitesQuantities).some(qty => qty > 0) ||
+      Object.values(barritasQuantities).some(qty => qty > 0)
     
     if (!hasAnyProducts) {
       Swal.fire({
@@ -247,16 +525,59 @@ const Home = () => {
     const filteredTermicos = termicos.filter(t => termicosQuantities[t.id] > 0)
       .map(t => ({ id: t.id, title: t.title, quantity: termicosQuantities[t.id] }))
     
+    // Filter products for new categories
+    const filteredPalitos = palitos.filter(p => palitosQuantities[p.id] > 0)
+      .map(p => ({ id: p.id, title: p.title, quantity: palitosQuantities[p.id] }))
+      
+    const filteredCrocker = crocker.filter(c => crockerQuantities[c.id] > 0)
+      .map(c => ({ id: c.id, title: c.title, quantity: crockerQuantities[c.id] }))
+      
+    const filteredDieteticos = dieteticos.filter(d => dieteticosQuantities[d.id] > 0)
+      .map(d => ({ id: d.id, title: d.title, quantity: dieteticosQuantities[d.id] }))
+      
+    const filteredBuffet = buffet.filter(b => buffetQuantities[b.id] > 0)
+      .map(b => ({ id: b.id, title: b.title, quantity: buffetQuantities[b.id] }))
+      
+    const filteredDulces = dulces.filter(d => dulcesQuantities[d.id] > 0)
+      .map(d => ({ id: d.id, title: d.title, quantity: dulcesQuantities[d.id] }))
+      
+    const filteredPaletas = paletas.filter(p => paletasQuantities[p.id] > 0)
+      .map(p => ({ id: p.id, title: p.title, quantity: paletasQuantities[p.id] }))
+      
+    const filteredBites = bites.filter(b => bitesQuantities[b.id] > 0)
+      .map(b => ({ id: b.id, title: b.title, quantity: bitesQuantities[b.id] }))
+      
+    const filteredBarritas = barritas.filter(b => barritasQuantities[b.id] > 0)
+      .map(b => ({ id: b.id, title: b.title, quantity: barritasQuantities[b.id] }))
+    
     updateOrderData({
       heladosQuantities,
       postresQuantities,
       softsQuantities,
       termicosQuantities,
+      // Add new category quantities
+      palitosQuantities,
+      crockerQuantities,
+      dieteticosQuantities,
+      buffetQuantities,
+      dulcesQuantities,
+      paletasQuantities,
+      bitesQuantities,
+      barritasQuantities,
       products: {
         helados: filteredHelados,
         postres: filteredPostres,
         softs: filteredSofts,
-        termicos: filteredTermicos
+        termicos: filteredTermicos,
+        // Add new category products
+        palitos: filteredPalitos,
+        crocker: filteredCrocker,
+        dieteticos: filteredDieteticos,
+        buffet: filteredBuffet,
+        dulces: filteredDulces,
+        paletas: filteredPaletas,
+        bites: filteredBites,
+        barritas: filteredBarritas
       }
     })
     
@@ -426,6 +747,41 @@ const Home = () => {
     }
   }
 
+  // Function to render a product category section
+  const renderProductSection = (title, products, quantities, handleIncrement, handleDecrement) => {
+    if (!products || products.length === 0) return null;
+    
+    return (
+      <div style={styles.section}>
+        <h2 style={styles.sectionTitle}>{title}</h2>
+        <div style={styles.productGrid}>
+          {products.map((product) => (
+            <div key={product.id} style={styles.productCard}>
+              <h3 style={styles.productTitle}>{product.title}</h3>
+              <div style={styles.quantityControl}>
+                <button 
+                  onClick={() => handleDecrement(product.id)}
+                  style={{...styles.button, ...styles.decrementButton}}
+                >
+                  -
+                </button>
+                <span style={styles.quantity}>
+                  {quantities[product.id] || 0}
+                </span>
+                <button 
+                  onClick={() => handleIncrement(product.id)}
+                  style={{...styles.button, ...styles.incrementButton}}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -464,118 +820,19 @@ const Home = () => {
         </div>
       </div>
       
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Selecciona los Helados</h2>
-        <div style={styles.productGrid}>
-          {helados.map((helado) => (
-            <div key={helado.id} style={styles.productCard}>
-              <h3 style={styles.productTitle}>{helado.title}</h3>
-              <div style={styles.quantityControl}>
-                <button 
-                  onClick={() => handleDecrementHelado(helado.id)}
-                  style={{...styles.button, ...styles.decrementButton}}
-                >
-                  -
-                </button>
-                <span style={styles.quantity}>
-                  {heladosQuantities[helado.id] || 0}
-                </span>
-                <button 
-                  onClick={() => handleIncrementHelado(helado.id)}
-                  style={{...styles.button, ...styles.incrementButton}}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Selecciona los Postres</h2>
-        <div style={styles.productGrid}>
-          {postres.map((postre) => (
-            <div key={postre.id} style={styles.productCard}>
-              <h3 style={styles.productTitle}>{postre.title}</h3>
-              <div style={styles.quantityControl}>
-                <button 
-                  onClick={() => handleDecrementPostre(postre.id)}
-                  style={{...styles.button, ...styles.decrementButton}}
-                >
-                  -
-                </button>
-                <span style={styles.quantity}>
-                  {postresQuantities[postre.id] || 0}
-                </span>
-                <button 
-                  onClick={() => handleIncrementPostre(postre.id)}
-                  style={{...styles.button, ...styles.incrementButton}}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Selecciona los Softs</h2>
-        <div style={styles.productGrid}>
-          {softs.map((soft) => (
-            <div key={soft.id} style={styles.productCard}>
-              <h3 style={styles.productTitle}>{soft.title}</h3>
-              <div style={styles.quantityControl}>
-                <button 
-                  onClick={() => handleDecrementSoft(soft.id)}
-                  style={{...styles.button, ...styles.decrementButton}}
-                >
-                  -
-                </button>
-                <span style={styles.quantity}>
-                  {softsQuantities[soft.id] || 0}
-                </span>
-                <button 
-                  onClick={() => handleIncrementSoft(soft.id)}
-                  style={{...styles.button, ...styles.incrementButton}}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Selecciona los Termicos</h2>
-        <div style={styles.productGrid}>
-          {termicos.map((termico) => (
-            <div key={termico.id} style={styles.productCard}>
-              <h3 style={styles.productTitle}>{termico.title}</h3>
-              <div style={styles.quantityControl}>
-                <button 
-                  onClick={() => handleDecrementTermico(termico.id)}
-                  style={{...styles.button, ...styles.decrementButton}}
-                >
-                  -
-                </button>
-                <span style={styles.quantity}>
-                  {termicosQuantities[termico.id] || 0}
-                </span>
-                <button 
-                  onClick={() => handleIncrementTermico(termico.id)}
-                  style={{...styles.button, ...styles.incrementButton}}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
+      {/* Rendering product categories in the requested order */}
+      {renderProductSection("Selecciona los Helados", helados, heladosQuantities, handleIncrementHelado, handleDecrementHelado)}
+      {renderProductSection("Selecciona los Palitos", palitos, palitosQuantities, handleIncrementPalito, handleDecrementPalito)}
+      {renderProductSection("Selecciona los Postres", postres, postresQuantities, handleIncrementPostre, handleDecrementPostre)}
+      {renderProductSection("Selecciona los Crocker", crocker, crockerQuantities, handleIncrementCrocker, handleDecrementCrocker)}
+      {renderProductSection("Selecciona los Dietéticos", dieteticos, dieteticosQuantities, handleIncrementDietetico, handleDecrementDietetico)}
+      {renderProductSection("Selecciona los Buffet", buffet, buffetQuantities, handleIncrementBuffet, handleDecrementBuffet)}
+      {renderProductSection("Selecciona los Softs", softs, softsQuantities, handleIncrementSoft, handleDecrementSoft)}
+      {renderProductSection("Selecciona los Dulces", dulces, dulcesQuantities, handleIncrementDulce, handleDecrementDulce)}
+      {renderProductSection("Selecciona las Paletas", paletas, paletasQuantities, handleIncrementPaleta, handleDecrementPaleta)}
+      {renderProductSection("Selecciona los Bites", bites, bitesQuantities, handleIncrementBite, handleDecrementBite)}
+      {renderProductSection("Selecciona los Termicos", termicos, termicosQuantities, handleIncrementTermico, handleDecrementTermico)}
+      
       <div style={styles.section}>
         <button 
           onClick={handleReviewOrder}
