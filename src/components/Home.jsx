@@ -549,7 +549,7 @@ const Home = () => {
       
     const filteredBarritas = barritas.filter(b => barritasQuantities[b.id] > 0)
       .map(b => ({ id: b.id, title: b.title, quantity: barritasQuantities[b.id] }))
-    
+
     updateOrderData({
       heladosQuantities,
       postresQuantities,
@@ -585,168 +585,6 @@ const Home = () => {
     navigate('/review')
   }
 
-  // Mobile-responsive styling
-  const styles = {
-    container: {
-      width: '100%',
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '10px',
-      fontFamily: 'Arial, sans-serif',
-      boxSizing: 'border-box',
-    },
-    header: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      marginBottom: '20px',
-    },
-    logo: {
-      width: '120px',
-      marginBottom: '8px',
-    },
-    title: {
-      fontSize: 'clamp(18px, 5vw, 28px)',
-      color: '#2c3e50',
-      margin: '5px 0',
-      textAlign: 'center',
-    },
-    sectionTitle: {
-      fontSize: 'clamp(16px, 4vw, 22px)',
-      color: '#3498db',
-      marginBottom: '12px',
-      borderBottom: '2px solid #f1f1f1',
-      paddingBottom: '8px',
-      textAlign: 'center',
-    },
-    formControl: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      width: '100%',
-    },
-    select: {
-      padding: '10px',
-      borderRadius: '5px',
-      border: '1px solid #ddd',
-      width: 'auto',
-      minWidth: '200px',
-      maxWidth: '100%',
-      marginBottom: '20px',
-      fontSize: '16px',
-    },
-    datePicker: {
-      padding: '10px',
-      borderRadius: '5px',
-      border: '1px solid #ddd',
-      width: 'auto',
-      minWidth: '200px',
-      maxWidth: '100%',
-      marginBottom: '20px',
-      fontSize: '16px',
-      fontFamily: 'Arial, sans-serif',
-    },
-    productGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-      gap: '10px',
-      maxWidth: '900px',
-      margin: '0 auto',
-      justifyContent: 'center',
-    },
-    productGridContainer: {
-      display: 'flex',
-      justifyContent: 'center',
-      width: '100%',
-    },
-    productCard: {
-      border: '1px solid #eee',
-      borderRadius: '8px',
-      padding: '12px',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-      transition: 'transform 0.2s, box-shadow 0.2s',
-    },
-    productTitle: {
-      fontSize: '16px',
-      fontWeight: 'bold',
-      marginBottom: '10px',
-      textAlign: 'center',
-    },
-    quantityControl: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: '8px',
-    },
-    button: {
-      width: '36px',
-      height: '36px',
-      borderRadius: '50%',
-      border: 'none',
-      fontSize: '18px',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minWidth: '36px',
-      minHeight: '36px',
-    },
-    decrementButton: {
-      backgroundColor: '#e74c3c',
-      color: 'white',
-    },
-    incrementButton: {
-      backgroundColor: '#2ecc71',
-      color: 'white',
-    },
-    quantity: {
-      margin: '0 12px',
-      fontSize: '18px',
-      fontWeight: 'bold',
-      width: '25px',
-      textAlign: 'center',
-    },
-    section: {
-      marginBottom: '25px',
-      textAlign: 'center',
-    },
-    label: {
-      display: 'block',
-      marginBottom: '5px',
-      fontSize: 'clamp(14px, 3vw, 16px)',
-      fontWeight: 'bold',
-      color: '#2c3e50',
-      textAlign: 'center',
-    },
-    actionButton: {
-      backgroundColor: '#3498db',
-      color: 'white',
-      width: '100%', 
-      maxWidth: '300px',
-      padding: '12px',
-      fontSize: '18px',
-      borderRadius: '5px',
-      border: 'none',
-      cursor: 'pointer',
-      fontWeight: 'bold',
-    },
-    '@media (max-width: 480px)': {
-      productGrid: {
-        gridTemplateColumns: '1fr 1fr',
-      },
-      button: {
-        width: '44px',
-        height: '44px',
-      },
-      select: {
-        minWidth: '180px',
-      },
-      datePicker: {
-        minWidth: '180px',
-      }
-    }
-  }
-
   // Function to render a product category section
   const renderProductSection = (title, products, quantities, handleIncrement, handleDecrement) => {
     if (!products || products.length === 0) return null;
@@ -755,25 +593,25 @@ const Home = () => {
     const sortedProducts = [...products].sort((a, b) => a.id - b.id);
     
     return (
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>{title}</h2>
-        <div style={styles.productGrid}>
+      <div className="mb-6 text-center">
+        <h2 className="text-[#3498db] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">{title}</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 max-w-3xl mx-auto">
           {sortedProducts.map((product) => (
-            <div key={product.id} style={styles.productCard}>
-              <h3 style={styles.productTitle}>{product.title}</h3>
-              <div style={styles.quantityControl}>
+            <div key={product.id} className="border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all">
+              <h3 className="text-base font-bold mb-2.5 text-center">{product.title}</h3>
+              <div className="flex items-center justify-center mt-2">
                 <button 
                   onClick={() => handleDecrement(product.id)}
-                  style={{...styles.button, ...styles.decrementButton}}
+                  className="w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center text-lg"
                 >
                   -
                 </button>
-                <span style={styles.quantity}>
+                <span className="mx-3 text-lg font-bold w-6 text-center">
                   {quantities[product.id] || 0}
                 </span>
                 <button 
                   onClick={() => handleIncrement(product.id)}
-                  style={{...styles.button, ...styles.incrementButton}}
+                  className="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center text-lg"
                 >
                   +
                 </button>
@@ -786,32 +624,34 @@ const Home = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <img src={logoLaFe} alt="Logo La Fe" style={styles.logo} />
-        <h1 style={styles.title}>App Pedidos La Fe</h1>
+    <div className="w-full max-w-7xl mx-auto p-2.5 font-sans box-border">
+      <div className="flex flex-col items-center mb-5">
+        <img src={logoLaFe} alt="Logo La Fe" className="w-30 mb-2" />
+        <h1 className="text-xl md:text-3xl text-[#2c3e50] my-1 text-center">App Pedidos La Fe</h1>
       </div>
       
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Selecciona la Fecha del Pedido</h2>
-        <div style={styles.formControl}>
-          <label style={styles.label} htmlFor="orderDate">Fecha de entrega:</label>
+      <div className="mb-6 text-center">
+        <h2 className="text-[#3498db] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">Selecciona la Fecha del Pedido</h2>
+        <div className="flex flex-col items-center w-full">
+          <label className="block mb-1 text-sm md:text-base font-bold text-[#2c3e50] text-center" htmlFor="orderDate">
+            Fecha de entrega:
+          </label>
           <input
             type="date"
             id="orderDate"
             value={orderDate}
             onChange={handleDateChange}
-            style={styles.datePicker}
+            className="p-2.5 rounded border border-gray-300 w-auto min-w-[200px] max-w-full mb-5 text-base font-sans"
             min={new Date().toISOString().split('T')[0]}
           />
         </div>
       </div>
       
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Selecciona la Sucursal</h2>
-        <div style={styles.formControl}>
+      <div className="mb-6 text-center">
+        <h2 className="text-[#3498db] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">Selecciona la Sucursal</h2>
+        <div className="flex flex-col items-center w-full">
           <select 
-            style={styles.select}
+            className="p-2.5 rounded border border-gray-300 w-auto min-w-[200px] max-w-full mb-5 text-base"
             value={selectedSucursal}
             onChange={handleSucursalChange}
           >
@@ -835,15 +675,14 @@ const Home = () => {
       {renderProductSection("Selecciona las Paletas", paletas, paletasQuantities, handleIncrementPaleta, handleDecrementPaleta)}
       {renderProductSection("Selecciona los Bites", bites, bitesQuantities, handleIncrementBite, handleDecrementBite)}
       {renderProductSection("Selecciona los Termicos", termicos, termicosQuantities, handleIncrementTermico, handleDecrementTermico)}
+      {renderProductSection("Selecciona las Barritas", barritas, barritasQuantities, handleIncrementBarrita, handleDecrementBarrita)}
       
-      <div style={styles.section}>
+      <div className="mb-6 text-center">
         <button 
           onClick={handleReviewOrder}
-          style={{
-            ...styles.actionButton,
-            opacity: !selectedSucursal ? 0.6 : 1,
-            cursor: !selectedSucursal ? 'not-allowed' : 'pointer'
-          }}
+          className={`bg-[#3498db] text-white w-full max-w-[300px] py-3 text-lg rounded font-bold ${
+            !selectedSucursal ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+          }`}
         >
           Revisar Pedido
         </button>

@@ -25,7 +25,7 @@ const ReviewOrder = () => {
     navigate('/')
   }
   
-  // Update the PDF generation function to include new categories
+  // The PDF generation function doesn't need any changes as it's not using inline styles
   const generatePDF = () => {
     // Create a new document with A4 dimensions (210 x 297 mm)
     const doc = new jsPDF({
@@ -396,170 +396,49 @@ const ReviewOrder = () => {
     document.body.removeChild(link)
   }
   
-  // Helper function to render product rows
+  // Helper function to render product rows with Tailwind classes
   const renderProductRows = (productType, displayName) => {
     if (!orderData.products[productType] || orderData.products[productType].length === 0) {
       return null;
     }
     
     return orderData.products[productType].map((item, index) => (
-      <tr key={`${productType}-${item.id}`} style={index % 2 === 0 ? styles.tr : styles.trAlternate}>
-        <td style={styles.td}>{displayName}</td>
-        <td style={styles.td}>{item.title}</td>
-        <td style={styles.td}>{item.quantity}</td>
-        <td style={styles.td}>{/* Empty cell for Kgs */}</td>
+      <tr key={`${productType}-${item.id}`} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+        <td className="py-3 px-4 border-b border-gray-200">{displayName}</td>
+        <td className="py-3 px-4 border-b border-gray-200">{item.title}</td>
+        <td className="py-3 px-4 border-b border-gray-200">{item.quantity}</td>
+        <td className="py-3 px-4 border-b border-gray-200">{/* Empty cell for Kgs */}</td>
       </tr>
     ));
   };
   
-  // Styles (similar to your existing styles)
-  const styles = {
-    container: {
-      width: '100%',
-      maxWidth: '800px',
-      margin: '0 auto',
-      padding: '20px',
-      fontFamily: 'Arial, sans-serif',
-      boxSizing: 'border-box',
-    },
-    header: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      marginBottom: '30px',
-    },
-    logo: {
-      width: '120px',
-      marginBottom: '10px',
-    },
-    title: {
-      fontSize: '28px',
-      color: '#2c3e50',
-      margin: '5px 0',
-      textAlign: 'center',
-    },
-    orderDetails: {
-      background: '#f8f9fa',
-      padding: '20px',
-      borderRadius: '8px',
-      marginBottom: '20px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    },
-    detailRow: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: '10px 0',
-      borderBottom: '1px solid #eee',
-    },
-    label: {
-      fontWeight: 'bold',
-      color: '#2c3e50',
-    },
-    value: {
-      color: '#34495e',
-    },
-    table: {
-      width: '100%',
-      borderCollapse: 'collapse',
-      marginTop: '20px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-      borderRadius: '8px',
-      overflow: 'hidden',
-    },
-    th: {
-      backgroundColor: '#3498db',
-      color: 'white',
-      padding: '12px 15px',
-      textAlign: 'left',
-    },
-    td: {
-      padding: '12px 15px',
-      borderBottom: '1px solid #ddd',
-    },
-    tr: {
-      backgroundColor: 'white',
-    },
-    trAlternate: {
-      backgroundColor: '#f9f9f9',
-    },
-    buttonContainer: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      marginTop: '30px',
-      flexWrap: 'wrap',
-      gap: '10px',
-    },
-    button: {
-      padding: '12px 20px',
-      fontSize: '16px',
-      borderRadius: '5px',
-      border: 'none',
-      cursor: 'pointer',
-      fontWeight: 'bold',
-    },
-    backButton: {
-      backgroundColor: '#95a5a6',
-      color: 'white',
-    },
-    sendButton: {
-      backgroundColor: '#25D366', // WhatsApp green
-      color: 'white',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '10px',
-    },
-    whatsappIcon: {
-      width: '20px',
-      height: '20px',
-    },
-    noProducts: {
-      textAlign: 'center',
-      padding: '40px',
-      color: '#7f8c8d',
-      fontSize: '18px',
-    },
-    pdfButton: {
-      backgroundColor: '#e74c3c', // Red color for PDF button
-      color: 'white',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '10px',
-    },
-    pdfIcon: {
-      width: '20px',
-      height: '20px',
-    },
-  }
-  
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <img src={logoLaFe} alt="Logo La Fe" style={styles.logo} />
-        <h1 style={styles.title}>Resumen del Pedido</h1>
+    <div className="w-full max-w-3xl mx-auto p-5 font-sans box-border">
+      <div className="flex flex-col items-center mb-8">
+        <img src={logoLaFe} alt="Logo La Fe" className="w-32 mb-2.5" />
+        <h1 className="text-2xl md:text-3xl text-[#2c3e50] my-1 text-center font-bold">Resumen del Pedido</h1>
       </div>
       
-      <div style={styles.orderDetails}>
-        <div style={styles.detailRow}>
-          <span style={styles.label}>Fecha de entrega:</span>
-          <span style={styles.value}>{formatDate(orderData.orderDate)}</span>
+      <div className="bg-gray-50 p-5 rounded-lg mb-5 shadow-sm">
+        <div className="flex justify-between py-2.5 border-b border-gray-100">
+          <span className="font-bold text-[#2c3e50]">Fecha de entrega:</span>
+          <span className="text-[#34495e]">{formatDate(orderData.orderDate)}</span>
         </div>
-        <div style={styles.detailRow}>
-          <span style={styles.label}>Sucursal:</span>
-          <span style={styles.value}>{orderData.sucursalTitle}</span>
+        <div className="flex justify-between py-2.5 border-b border-gray-100">
+          <span className="font-bold text-[#2c3e50]">Sucursal:</span>
+          <span className="text-[#34495e]">{orderData.sucursalTitle}</span>
         </div>
       </div>
       
       {hasProducts ? (
         <div ref={pdfRef}>
-          <table style={styles.table}>
+          <table className="w-full border-collapse mt-5 shadow-sm rounded-lg overflow-hidden">
             <thead>
               <tr>
-                <th style={styles.th}>Tipo</th>
-                <th style={styles.th}>Producto</th>
-                <th style={styles.th}>Cantidad</th>
-                <th style={styles.th}>Kgs</th>
+                <th className="bg-[#3498db] text-white py-3 px-4 text-left">Tipo</th>
+                <th className="bg-[#3498db] text-white py-3 px-4 text-left">Producto</th>
+                <th className="bg-[#3498db] text-white py-3 px-4 text-left">Cantidad</th>
+                <th className="bg-[#3498db] text-white py-3 px-4 text-left">Kgs</th>
               </tr>
             </thead>
             <tbody>
@@ -574,19 +453,20 @@ const ReviewOrder = () => {
               {renderProductRows('paletas', 'Paleta')}
               {renderProductRows('bites', 'Bite')}
               {renderProductRows('termicos', 'Térmico')}
+              {renderProductRows('barritas', 'Barrita')}
             </tbody>
           </table>
         </div>
       ) : (
-        <div style={styles.noProducts}>
+        <div className="text-center py-10 text-gray-500 text-lg">
           No hay productos seleccionados para este pedido.
         </div>
       )}
       
-      <div style={styles.buttonContainer}>
+      <div className="flex justify-between mt-8 flex-wrap gap-2.5">
         <button 
           onClick={handleGoBack}
-          style={{...styles.button, ...styles.backButton}}
+          className="py-3 px-5 text-base rounded font-bold bg-gray-400 text-white"
         >
           Volver y Editar
         </button>
@@ -595,17 +475,17 @@ const ReviewOrder = () => {
           <>
             <button 
               onClick={handleSavePDF}
-              style={{...styles.button, ...styles.pdfButton}}
+              className="py-3 px-5 text-base rounded font-bold bg-red-500 text-white flex items-center justify-center gap-2.5"
             >
-              {iconPdf && <img src={iconPdf} alt="PDF" style={styles.pdfIcon} />}
+              {iconPdf && <img src={iconPdf} alt="PDF" className="w-5 h-5" />}
               Guardar PDF
             </button>
             
             <button 
               onClick={handleSendWhatsapp}
-              style={{...styles.button, ...styles.sendButton}}
+              className="py-3 px-5 text-base rounded font-bold bg-[#25D366] text-white flex items-center justify-center gap-2.5"
             >
-              <img src={iconWhatsapp} alt="WhatsApp" style={styles.whatsappIcon} />
+              <img src={iconWhatsapp} alt="WhatsApp" className="w-5 h-5" />
               Enviar por WhatsApp
             </button>
           </>
