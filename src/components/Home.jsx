@@ -204,6 +204,23 @@ const Home = () => {
 
   // Handle the "Revisar Pedido" button click
   const handleReviewOrder = () => {
+    // Validation: check if a sucursal is selected
+    if (!selectedSucursal) {
+      alert('Por favor selecciona una sucursal antes de continuar')
+      return
+    }
+    
+    // Validation: check if at least one product is selected
+    const hasAnyProducts = Object.values(heladosQuantities).some(qty => qty > 0) ||
+      Object.values(postresQuantities).some(qty => qty > 0) ||
+      Object.values(softsQuantities).some(qty => qty > 0) ||
+      Object.values(termicosQuantities).some(qty => qty > 0)
+    
+    if (!hasAnyProducts) {
+      alert('Por favor selecciona al menos un producto para tu pedido')
+      return
+    }
+
     // First, update all products data in context
     const filteredHelados = helados.filter(h => heladosQuantities[h.id] > 0)
       .map(h => ({ id: h.id, title: h.title, quantity: heladosQuantities[h.id] }))
@@ -549,8 +566,11 @@ const Home = () => {
       <div style={styles.section}>
         <button 
           onClick={handleReviewOrder}
-          style={styles.actionButton}
-          disabled={!selectedSucursal} // Disable if no sucursal is selected
+          style={{
+            ...styles.actionButton,
+            opacity: !selectedSucursal ? 0.6 : 1,
+            cursor: !selectedSucursal ? 'not-allowed' : 'pointer'
+          }}
         >
           Revisar Pedido
         </button>
