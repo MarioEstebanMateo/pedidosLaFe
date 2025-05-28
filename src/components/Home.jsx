@@ -596,7 +596,7 @@ const Home = () => {
     
     return (
       <div className="mb-6 text-center">
-        <h2 className="text-[#3498db] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">{title}</h2>
+        <h2 className="text-[#2c3e50] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">{title}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 max-w-3xl mx-auto">
           {sortedProducts.map((product) => (
             <div key={product.id} className="border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all flex flex-col h-full">
@@ -606,7 +606,8 @@ const Home = () => {
               <div className="flex items-center justify-center mt-auto pt-2">
                 <button 
                   onClick={() => handleDecrement(product.id)}
-                  className="w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center text-lg"
+                  className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center text-lg"
+                  aria-label={`Disminuir cantidad de ${product.title}`}
                 >
                   -
                 </button>
@@ -615,7 +616,8 @@ const Home = () => {
                 </span>
                 <button 
                   onClick={() => handleIncrement(product.id)}
-                  className="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center text-lg"
+                  className="w-9 h-9 rounded-full bg-green-600 text-white flex items-center justify-center text-lg"
+                  aria-label={`Aumentar cantidad de ${product.title}`}
                 >
                   +
                 </button>
@@ -635,7 +637,7 @@ const Home = () => {
       </div>
       
       <div className="mb-6 text-center">
-        <h2 className="text-[#3498db] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">Selecciona la Fecha del Pedido</h2>
+        <h2 className="text-[#2c3e50] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">Selecciona la Fecha del Pedido</h2>
         <div className="flex flex-col items-center w-full">
           <label className="block mb-1 text-sm md:text-base font-bold text-[#2c3e50] text-center" htmlFor="orderDate">
             Fecha de entrega:
@@ -652,12 +654,17 @@ const Home = () => {
       </div>
       
       <div className="mb-6 text-center">
-        <h2 className="text-[#3498db] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">Selecciona la Sucursal</h2>
+        <h2 className="text-[#2c3e50] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">Selecciona la Sucursal</h2>
         <div className="flex flex-col items-center w-full">
+          <label htmlFor="sucursalSelect" className="block mb-1 text-sm md:text-base font-bold text-[#2c3e50] text-center">
+            Sucursal:
+          </label>
           <select 
+            id="sucursalSelect"
             className="p-2.5 rounded border border-gray-300 w-auto min-w-[200px] max-w-full mb-5 text-base"
             value={selectedSucursal}
             onChange={handleSucursalChange}
+            aria-label="Seleccionar sucursal"
           >
             <option value="">Selecciona una sucursal</option>
             {sucursales.map((sucursal) => (
@@ -685,7 +692,7 @@ const Home = () => {
       <div className="mb-6 text-center">
         <button 
           onClick={handleReviewOrder}
-          className={`bg-[#3498db] text-white w-full max-w-[300px] py-3 text-lg rounded font-bold ${
+          className={`bg-[#1a5b8c] text-white w-full max-w-[300px] py-3 text-lg rounded font-bold ${
             !selectedSucursal ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
           }`}
         >

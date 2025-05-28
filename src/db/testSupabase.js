@@ -13,19 +13,6 @@ export async function testSupabaseConnection() {
       return false;
     }
 
-    // Also test one of the new tables
-    const { data: palitosData, error: palitosError } = await supabase
-      .from("palitos")
-      .select("*")
-      .limit(1);
-
-    if (palitosError) {
-      console.error("Error fetching from new table:", palitosError.message);
-      // Continue even if this fails, as the connection was already confirmed
-    } else {
-      console.log("New table connection successful!");
-    }
-
     console.log("Supabase connection successful!");
     console.log("Test data:", data);
     return true;
