@@ -15,10 +15,24 @@ const ReviewOrder = () => {
   // Check if any products were selected across all categories
   const hasProducts = Object.values(orderData.products).some(arr => arr.length > 0)
   
-  // Format date for display
+  // Format date for display without timezone issues
   const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('es-ES')
+    if (!dateString) return '';
+    
+    // Split the date string into components
+    const [year, month, day] = dateString.split('-').map(Number);
+    
+    // Create a date object using UTC to avoid timezone shifting
+    // Note: month is 0-indexed in JavaScript Date
+    const date = new Date(Date.UTC(year, month - 1, day));
+    
+    // Format using toLocaleDateString with explicit options to keep the date as is
+    return date.toLocaleDateString('es-ES', { 
+      timeZone: 'UTC',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
   }
   
   const handleGoBack = () => {

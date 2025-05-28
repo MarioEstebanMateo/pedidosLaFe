@@ -550,6 +550,7 @@ const Home = () => {
     const filteredBarritas = barritas.filter(b => barritasQuantities[b.id] > 0)
       .map(b => ({ id: b.id, title: b.title, quantity: barritasQuantities[b.id] }))
 
+    // Simply pass the orderDate string directly without creating a Date object
     updateOrderData({
       heladosQuantities,
       postresQuantities,
@@ -564,6 +565,7 @@ const Home = () => {
       paletasQuantities,
       bitesQuantities,
       barritasQuantities,
+      orderDate: orderDate,
       products: {
         helados: filteredHelados,
         postres: filteredPostres,
