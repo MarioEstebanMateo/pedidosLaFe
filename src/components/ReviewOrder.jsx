@@ -325,69 +325,73 @@ const ReviewOrder = () => {
     // Set starting Y position 
     const startY = 25; // Keep this value as it works well with the new header
     
-    // Draw left column table (Helados)
-    autoTable(doc, {
-      startY: startY,
-      margin: { left: 5, right: pageWidth / 2 + 1 }, // Adjusted to reduce gap
-      head: [leftTableData[0]],
-      body: leftTableData.slice(1),
-      theme: 'striped',
-      headStyles: { 
-        fillColor: [0, 0, 0],   // Black background for printing compatibility
-        textColor: [255, 255, 255], 
-        fontSize: headerFontSize,  // Use new variable
-        cellPadding: cellPadding, // Use new variable
-        lineWidth: 0.1,
-        lineColor: [0, 0, 0],
-        halign: 'center' // Center the header text
-      },
-      styles: {
-        fontSize: baseFontSize,  // Use new variable
-        cellPadding: cellPadding, // Use new variable
-        overflow: 'linebreak',
-        lineWidth: 0.1,
-        lineColor: [0, 0, 0],
-        textColor: [0, 0, 0]    // Explicitly set text to black
-      },
-      columnStyles: {
-        0: { cellWidth: 40 },          // Slightly increased
-        1: { cellWidth: 12, halign: 'center' },
-        2: { cellWidth: 30, halign: 'center' }
-      },
-      tableWidth: (pageWidth / 2)// Adjusted width to make tables touch
-    });
+    // Only draw left column table (Helados) if it has products (more than just the header)
+    if (leftTableData.length > 1) {
+      autoTable(doc, {
+        startY: startY,
+        margin: { left: 5, right: pageWidth / 2 + 1 }, // Adjusted to reduce gap
+        head: [leftTableData[0]],
+        body: leftTableData.slice(1),
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [0, 0, 0],   // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          fontSize: headerFontSize,  // Use new variable
+          cellPadding: cellPadding, // Use new variable
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0],
+          halign: 'center' // Center the header text
+        },
+        styles: {
+          fontSize: baseFontSize,  // Use new variable
+          cellPadding: cellPadding, // Use new variable
+          overflow: 'linebreak',
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0],
+          textColor: [0, 0, 0]    // Explicitly set text to black
+        },
+        columnStyles: {
+          0: { cellWidth: 40 },          // Slightly increased
+          1: { cellWidth: 12, halign: 'center' },
+          2: { cellWidth: 30, halign: 'center' }
+        },
+        tableWidth: (pageWidth / 2)// Adjusted width to make tables touch
+      });
+    }
     
-    // Draw right column table (all other products)
-    autoTable(doc, {
-      startY: startY,
-      margin: { left: pageWidth / 2 - 1, right: 5 }, // Adjusted to reduce gap
-      head: [rightTableData[0]],
-      body: rightTableData.slice(1),
-      theme: 'striped',
-      headStyles: { 
-        fillColor: [0, 0, 0],   // Black background for printing compatibility
-        textColor: [255, 255, 255], 
-        fontSize: headerFontSize,  // Use new variable
-        cellPadding: cellPadding, // Use new variable
-        lineWidth: 0.1,
-        lineColor: [0, 0, 0],
-        halign: 'center' // Center the header text
-      },
-      styles: {
-        fontSize: baseFontSize,  // Use new variable
-        cellPadding: cellPadding, // Use new variable
-        overflow: 'linebreak',
-        lineWidth: 0.1,
-        lineColor: [0, 0, 0],
-        textColor: [0, 0, 0]    // Explicitly set text to black
-      },
-      columnStyles: {
-        0: { cellWidth: 50 },          // Slightly increased
-        1: { cellWidth: 12, halign: 'center' },
-        2: { cellWidth: 30, halign: 'center' }
-      },
-      tableWidth: (pageWidth / 2)  // Adjusted width to make tables touch
-    });
+    // Only draw right column table if it has products (more than just the header)
+    if (rightTableData.length > 1) {
+      autoTable(doc, {
+        startY: startY,
+        margin: { left: pageWidth / 2 - 1, right: 5 }, // Adjusted to reduce gap
+        head: [rightTableData[0]],
+        body: rightTableData.slice(1),
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [0, 0, 0],   // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          fontSize: headerFontSize,  // Use new variable
+          cellPadding: cellPadding, // Use new variable
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0],
+          halign: 'center' // Center the header text
+        },
+        styles: {
+          fontSize: baseFontSize,  // Use new variable
+          cellPadding: cellPadding, // Use new variable
+          overflow: 'linebreak',
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0],
+          textColor: [0, 0, 0]    // Explicitly set text to black
+        },
+        columnStyles: {
+          0: { cellWidth: 50 },          // Slightly increased
+          1: { cellWidth: 12, halign: 'center' },
+          2: { cellWidth: 30, halign: 'center' }
+        },
+        tableWidth: (pageWidth / 2)  // Adjusted width to make tables touch
+      });
+    }
     
     return doc;
   }
