@@ -346,7 +346,8 @@ const ReviewOrder = () => {
         cellPadding: cellPadding, // Use new variable
         overflow: 'linebreak',
         lineWidth: 0.1,
-        lineColor: [0, 0, 0]
+        lineColor: [0, 0, 0],
+        textColor: [0, 0, 0]    // Explicitly set text to black
       },
       columnStyles: {
         0: { cellWidth: 40 },          // Slightly increased
@@ -377,7 +378,8 @@ const ReviewOrder = () => {
         cellPadding: cellPadding, // Use new variable
         overflow: 'linebreak',
         lineWidth: 0.1,
-        lineColor: [0, 0, 0]
+        lineColor: [0, 0, 0],
+        textColor: [0, 0, 0]    // Explicitly set text to black
       },
       columnStyles: {
         0: { cellWidth: 50 },          // Slightly increased
