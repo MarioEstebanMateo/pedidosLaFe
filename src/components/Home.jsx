@@ -599,9 +599,11 @@ const Home = () => {
         <h2 className="text-[#3498db] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">{title}</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 max-w-3xl mx-auto">
           {sortedProducts.map((product) => (
-            <div key={product.id} className="border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all">
-              <h3 className="text-base font-bold mb-2.5 text-center">{product.title}</h3>
-              <div className="flex items-center justify-center mt-2">
+            <div key={product.id} className="border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all flex flex-col h-full">
+              <div className="flex-grow flex items-center justify-center">
+                <h3 className="text-base font-bold mb-2.5 text-center">{product.title}</h3>
+              </div>
+              <div className="flex items-center justify-center mt-auto pt-2">
                 <button 
                   onClick={() => handleDecrement(product.id)}
                   className="w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center text-lg"
