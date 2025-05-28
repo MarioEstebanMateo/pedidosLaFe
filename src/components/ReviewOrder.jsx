@@ -353,7 +353,7 @@ const ReviewOrder = () => {
         1: { cellWidth: 12, halign: 'center' },
         2: { cellWidth: 30, halign: 'center' }
       },
-      tableWidth: (pageWidth / 2) - 7  // Adjusted width to make tables touch
+      tableWidth: (pageWidth / 2)// Adjusted width to make tables touch
     });
     
     // Draw right column table (all other products)
