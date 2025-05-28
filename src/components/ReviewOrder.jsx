@@ -15,7 +15,7 @@ const ReviewOrder = () => {
   // Check if any products were selected across all categories
   const hasProducts = Object.values(orderData.products).some(arr => arr.length > 0)
   
-  // Format date for display without timezone issues
+  // Update the formatDate function to include the day name and proper formatting
   const formatDate = (dateString) => {
     if (!dateString) return '';
     
@@ -23,53 +23,288 @@ const ReviewOrder = () => {
     const [year, month, day] = dateString.split('-').map(Number);
     
     // Create a date object using UTC to avoid timezone shifting
-    // Note: month is 0-indexed in JavaScript Date
     const date = new Date(Date.UTC(year, month - 1, day));
     
-    // Format using toLocaleDateString with explicit options to keep the date as is
-    return date.toLocaleDateString('es-ES', { 
-      timeZone: 'UTC',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
+    // Get day name in Spanish
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const dayName = dayNames[date.getUTCDay()];
+    
+    // Get month name in Spanish
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const monthName = monthNames[date.getUTCMonth()];
+    
+    // Format the date as "Miércoles 29 de Mayo de 2025"
+    return `${dayName} ${day} de ${monthName} de ${year}`;
   }
   
   const handleGoBack = () => {
     navigate('/')
   }
   
-  // The PDF generation function doesn't need any changes as it's not using inline styles
+  // Update the PDF generation function to better organize columns and fit one page
   const generatePDF = () => {
     // Create a new document with A4 dimensions (210 x 297 mm)
     const doc = new jsPDF({
       format: 'a4',
       unit: 'mm',
+      // Add minimum margins
+      margins: {
+        top: 1,
+        bottom: 1,
+        left: 1,
+        right: 1
+      }
     });
     
     // Get page dimensions
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     
-    // Add logo - make it smaller (15x15 mm to save space)
-    doc.addImage(logoLaFe, 'PNG', 10, 7, 15, 15);
+    // Remove the logo section
+    // doc.addImage(logoLaFe, 'PNG', 10, 7, 15, 15); - removed
     
-    // Add title - center it based on A4 width but save space
-    doc.setFontSize(16);
-    doc.text('Pedido La Fe', pageWidth / 2, 15, { align: 'center' });
+    // Replace the title with sucursal name (centered)
+    doc.setFontSize(10); // Keep this size for the sucursal name
+    doc.text(`Sucursal: ${orderData.sucursalTitle}`, pageWidth / 2, 10, { align: 'center' }); // Center sucursal name
     
-    // Add order details - make them more compact
-    doc.setFontSize(10);
-    doc.text(`Fecha de entrega: ${formatDate(orderData.orderDate)}`, 15, 25);
-    doc.text(`Sucursal: ${orderData.sucursalTitle}`, 15, 30);
+    // Add delivery date centered below sucursal
+    doc.setFontSize(10); // Slightly smaller for the date
+    doc.text(`Fecha de entrega: ${formatDate(orderData.orderDate)}`, pageWidth / 2, 18, { align: 'center' }); // Center date below sucursal
     
-    // Count total products to determine layout approach
+    // Always use 2-column layout with Helados in left column, others in right
+    // Create left column table data for Helados only
+    const leftTableData = [['Producto', 'Cant', 'Kgs']];
+    
+    // Create right column table data for all other products
+    const rightTableData = [['Producto', 'Cant', 'Kgs']];
+    
+    // Add Helados to left column
+    if (orderData.products.helados.length > 0) {
+      // Add category header - updated style
+      leftTableData.push([{ 
+        content: 'Helados', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background 
+          textColor: [255, 255, 255], // White text
+          halign: 'center' // Center alignment
+        } 
+      }]);
+      
+      // Sort helados products by ID before adding to table
+      const sortedHelados = sortProductsByID(orderData.products.helados);
+      sortedHelados.forEach(item => {
+        leftTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Add remaining product types to right column
+    // Palitos
+    if (orderData.products.palitos.length > 0) {
+      rightTableData.push([{ 
+        content: 'Palitos', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background 
+          textColor: [255, 255, 255], // White text
+          halign: 'center' // Center alignment
+        } 
+      }]);
+      const sortedPalitos = sortProductsByID(orderData.products.palitos);
+      sortedPalitos.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Postres
+    if (orderData.products.postres.length > 0) {
+      rightTableData.push([{ 
+        content: 'Postres', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedPostres = sortProductsByID(orderData.products.postres);
+      sortedPostres.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Crocker
+    if (orderData.products.crocker.length > 0) {
+      rightTableData.push([{ 
+        content: 'Crocker', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedCrocker = sortProductsByID(orderData.products.crocker);
+      sortedCrocker.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Dieteticos
+    if (orderData.products.dieteticos.length > 0) {
+      rightTableData.push([{ 
+        content: 'Dietéticos', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedDieteticos = sortProductsByID(orderData.products.dieteticos);
+      sortedDieteticos.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Buffet
+    if (orderData.products.buffet.length > 0) {
+      rightTableData.push([{ 
+        content: 'Buffet', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedBuffet = sortProductsByID(orderData.products.buffet);
+      sortedBuffet.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Softs
+    if (orderData.products.softs.length > 0) {
+      rightTableData.push([{ 
+        content: 'Softs', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedSofts = sortProductsByID(orderData.products.softs);
+      sortedSofts.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Dulces
+    if (orderData.products.dulces.length > 0) {
+      rightTableData.push([{ 
+        content: 'Dulces', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedDulces = sortProductsByID(orderData.products.dulces);
+      sortedDulces.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Paletas
+    if (orderData.products.paletas.length > 0) {
+      rightTableData.push([{ 
+        content: 'Paletas', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedPaletas = sortProductsByID(orderData.products.paletas);
+      sortedPaletas.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Bites
+    if (orderData.products.bites.length > 0) {
+      rightTableData.push([{ 
+        content: 'Bites', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedBites = sortProductsByID(orderData.products.bites);
+      sortedBites.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Barritas
+    if (orderData.products.barritas.length > 0) {
+      rightTableData.push([{ 
+        content: 'Barritas', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedBarritas = sortProductsByID(orderData.products.barritas);
+      sortedBarritas.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Termicos
+    if (orderData.products.termicos.length > 0) {
+      rightTableData.push([{ 
+        content: 'Térmicos', 
+        colSpan: 3, 
+        styles: { 
+          fontStyle: 'bold', 
+          fillColor: [0, 0, 0],  // Black background for printing compatibility
+          textColor: [255, 255, 255], 
+          halign: 'center' 
+        } 
+      }]);
+      const sortedTermicos = sortProductsByID(orderData.products.termicos);
+      sortedTermicos.forEach(item => {
+        rightTableData.push([item.title, item.quantity, '']);
+      });
+    }
+    
+    // Count total products to determine if we need smaller font
     const totalProducts = 
       orderData.products.helados.length + 
       orderData.products.postres.length + 
       orderData.products.softs.length + 
       orderData.products.termicos.length +
-      // Add new categories
       orderData.products.palitos.length + 
       orderData.products.crocker.length + 
       orderData.products.dieteticos.length + 
@@ -79,271 +314,78 @@ const ReviewOrder = () => {
       orderData.products.bites.length + 
       orderData.products.barritas.length;
     
-    // Always use 2-column layout for more than 10 items
-    // For very large orders (>30), use even smaller font
-    const useMultiColumn = totalProducts > 60;
-    const useTinyFont = totalProducts > 30;
+    // Use smaller font and tighter spacing if many products
+    const useTinyFont = totalProducts > 50;
     
-    if (useMultiColumn) {
-      // Create left column table data
-      const leftTableData = [['Tipo', 'Producto', 'Cant.', 'Kgs']];
-      // Create right column table data
-      const rightTableData = [['Tipo', 'Producto', 'Cant.', 'Kgs']];
-      
-      // Collect all products into a single array
-      const allProducts = [];
-      
-      if (orderData.products.helados.length > 0) {
-        orderData.products.helados.forEach(item => {
-          allProducts.push(['Helado', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.palitos.length > 0) {
-        orderData.products.palitos.forEach(item => {
-          allProducts.push(['Palito', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.postres.length > 0) {
-        orderData.products.postres.forEach(item => {
-          allProducts.push(['Postre', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.crocker.length > 0) {
-        orderData.products.crocker.forEach(item => {
-          allProducts.push(['Crocker', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.dieteticos.length > 0) {
-        orderData.products.dieteticos.forEach(item => {
-          allProducts.push(['Dietético', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.buffet.length > 0) {
-        orderData.products.buffet.forEach(item => {
-          allProducts.push(['Buffet', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.softs.length > 0) {
-        orderData.products.softs.forEach(item => {
-          allProducts.push(['Soft', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.dulces.length > 0) {
-        orderData.products.dulces.forEach(item => {
-          allProducts.push(['Dulce', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.paletas.length > 0) {
-        orderData.products.paletas.forEach(item => {
-          allProducts.push(['Paleta', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.bites.length > 0) {
-        orderData.products.bites.forEach(item => {
-          allProducts.push(['Bite', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.barritas.length > 0) {
-        orderData.products.barritas.forEach(item => {
-          allProducts.push(['Barrita', item.title, item.quantity, '']);
-        });
-      }
-      
-      // Add missing termicos category
-      if (orderData.products.termicos.length > 0) {
-        orderData.products.termicos.forEach(item => {
-          allProducts.push(['Térmico', item.title, item.quantity, '']);
-        });
-      }
-      
-      // Split products between columns
-      const halfIndex = Math.ceil(allProducts.length / 2);
-      const leftProducts = allProducts.slice(0, halfIndex);
-      const rightProducts = allProducts.slice(halfIndex);
-      
-      // Add products to respective column data
-      leftTableData.push(...leftProducts);
-      rightTableData.push(...rightProducts);
-      
-      // Set starting Y position higher to save space
-      const startY = 35;
-      
-      // Draw left column table with compact settings
-      autoTable(doc, {
-        startY: startY,
-        margin: { left: 5, right: pageWidth / 2 + 5 },
-        head: [leftTableData[0]],
-        body: leftTableData.slice(1),
-        theme: 'striped',
-        headStyles: { 
-          fillColor: [52, 152, 219],
-          fontSize: useTinyFont ? 6 : 7,
-          cellPadding: 1,
-          lineWidth: 0.1,
-          lineColor: [0, 0, 0]
-        },
-        styles: {
-          fontSize: useTinyFont ? 6 : 7,
-          cellPadding: useTinyFont ? 0.8 : 1.2,
-          overflow: 'linebreak',
-          lineWidth: 0.1,
-          lineColor: [0, 0, 0]
-        },
-        columnStyles: {
-          0: { cellWidth: 14 },
-          1: { cellWidth: 35 },
-          2: { cellWidth: 15, halign: 'center' },
-          3: { cellWidth: 30, halign: 'center' }
-        },
-        tableWidth: (pageWidth / 2) - 10
-      });
-      
-      // Draw right column table with compact settings
-      autoTable(doc, {
-        startY: startY,
-        margin: { left: pageWidth / 2 + 5, right: 5 },
-        head: [rightTableData[0]],
-        body: rightTableData.slice(1),
-        theme: 'striped',
-        headStyles: { 
-          fillColor: [52, 152, 219],
-          fontSize: useTinyFont ? 6 : 7,
-          cellPadding: 1,
-          lineWidth: 0.1,
-          lineColor: [0, 0, 0]
-        },
-        styles: {
-          fontSize: useTinyFont ? 6 : 7,
-          cellPadding: useTinyFont ? 0.8 : 1.2,
-          overflow: 'linebreak',
-          lineWidth: 0.1,
-          lineColor: [0, 0, 0]
-        },
-        columnStyles: {
-          0: { cellWidth: 14 },
-          1: { cellWidth: 35 },
-          2: { cellWidth: 15, halign: 'center' },
-          3: { cellWidth: 30, halign: 'center' }
-        },
-        tableWidth: (pageWidth / 2) - 10
-      });
-    } else {
-      // Simplified single-column layout for smaller orders
-      const tableData = [['Tipo', 'Producto', 'Cant.', 'Kgs']];
-      
-      // Add all products in order by type
-      if (orderData.products.helados.length > 0) {
-        orderData.products.helados.forEach(item => {
-          tableData.push(['Helado', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.palitos.length > 0) {
-        orderData.products.palitos.forEach(item => {
-          tableData.push(['Palito', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.postres.length > 0) {
-        orderData.products.postres.forEach(item => {
-          tableData.push(['Postre', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.crocker.length > 0) {
-        orderData.products.crocker.forEach(item => {
-          tableData.push(['Crocker', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.dieteticos.length > 0) {
-        orderData.products.dieteticos.forEach(item => {
-          tableData.push(['Dietético', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.buffet.length > 0) {
-        orderData.products.buffet.forEach(item => {
-          tableData.push(['Buffet', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.softs.length > 0) {
-        orderData.products.softs.forEach(item => {
-          tableData.push(['Soft', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.dulces.length > 0) {
-        orderData.products.dulces.forEach(item => {
-          tableData.push(['Dulce', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.paletas.length > 0) {
-        orderData.products.paletas.forEach(item => {
-          tableData.push(['Paleta', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.bites.length > 0) {
-        orderData.products.bites.forEach(item => {
-          tableData.push(['Bite', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (orderData.products.barritas.length > 0) {
-        orderData.products.barritas.forEach(item => {
-          tableData.push(['Barrita', item.title, item.quantity, '']);
-        });
-      }
-      
-      // Add missing termicos category
-      if (orderData.products.termicos.length > 0) {
-        orderData.products.termicos.forEach(item => {
-          tableData.push(['Térmico', item.title, item.quantity, '']);
-        });
-      }
-      
-      if (tableData.length > 1) {
-        // Use the imported autotable function with optimized settings
-        autoTable(doc, {
-          startY: 35,
-          margin: { left: 15, right: 15 },
-          head: [tableData[0]],
-          body: tableData.slice(1),
-          theme: 'striped',
-          headStyles: { 
-            fillColor: [52, 152, 219],
-            fontSize: 8,
-            lineWidth: 0.1,
-            lineColor: [0, 0, 0]
-          },
-          styles: {
-            fontSize: 8,
-            cellPadding: 2,
-            lineWidth: 0.1,
-            lineColor: [0, 0, 0]
-          },
-          columnStyles: {
-            0: { cellWidth: 14 },
-            1: { cellWidth: 35 },
-            2: { cellWidth: 15, halign: 'center' },
-            3: { cellWidth: 30, halign: 'center' }
-          }
-        });
-      }
-    }
+    // Adjust these base font size values
+    const baseFontSize = useTinyFont ? 7 : 8;  // Increased from 6/7 to 7/8
+    const headerFontSize = useTinyFont ? 7 : 8;  // Increased from 6/7 to 7/8
+    const cellPadding = useTinyFont ? 1 : 1.5;  // Slightly increased padding
+    
+    // Set starting Y position 
+    const startY = 25; // Keep this value as it works well with the new header
+    
+    // Draw left column table (Helados)
+    autoTable(doc, {
+      startY: startY,
+      margin: { left: 5, right: pageWidth / 2 + 1 }, // Adjusted to reduce gap
+      head: [leftTableData[0]],
+      body: leftTableData.slice(1),
+      theme: 'striped',
+      headStyles: { 
+        fillColor: [0, 0, 0],   // Black background for printing compatibility
+        textColor: [255, 255, 255], 
+        fontSize: headerFontSize,  // Use new variable
+        cellPadding: cellPadding, // Use new variable
+        lineWidth: 0.1,
+        lineColor: [0, 0, 0],
+        halign: 'center' // Center the header text
+      },
+      styles: {
+        fontSize: baseFontSize,  // Use new variable
+        cellPadding: cellPadding, // Use new variable
+        overflow: 'linebreak',
+        lineWidth: 0.1,
+        lineColor: [0, 0, 0]
+      },
+      columnStyles: {
+        0: { cellWidth: 40 },          // Slightly increased
+        1: { cellWidth: 12, halign: 'center' },
+        2: { cellWidth: 30, halign: 'center' }
+      },
+      tableWidth: (pageWidth / 2) - 7  // Adjusted width to make tables touch
+    });
+    
+    // Draw right column table (all other products)
+    autoTable(doc, {
+      startY: startY,
+      margin: { left: pageWidth / 2 - 1, right: 5 }, // Adjusted to reduce gap
+      head: [rightTableData[0]],
+      body: rightTableData.slice(1),
+      theme: 'striped',
+      headStyles: { 
+        fillColor: [0, 0, 0],   // Black background for printing compatibility
+        textColor: [255, 255, 255], 
+        fontSize: headerFontSize,  // Use new variable
+        cellPadding: cellPadding, // Use new variable
+        lineWidth: 0.1,
+        lineColor: [0, 0, 0],
+        halign: 'center' // Center the header text
+      },
+      styles: {
+        fontSize: baseFontSize,  // Use new variable
+        cellPadding: cellPadding, // Use new variable
+        overflow: 'linebreak',
+        lineWidth: 0.1,
+        lineColor: [0, 0, 0]
+      },
+      columnStyles: {
+        0: { cellWidth: 50 },          // Slightly increased
+        1: { cellWidth: 12, halign: 'center' },
+        2: { cellWidth: 30, halign: 'center' }
+      },
+      tableWidth: (pageWidth / 2)  // Adjusted width to make tables touch
+    });
     
     return doc;
   }
@@ -410,20 +452,34 @@ const ReviewOrder = () => {
     document.body.removeChild(link)
   }
   
-  // Helper function to render product rows with Tailwind classes
+  // Helper function to sort products by ID
+  const sortProductsByID = (products) => {
+    return [...products].sort((a, b) => a.id - b.id);
+  };
+  
+  // Update the renderProductRows function to sort products by ID
   const renderProductRows = (productType, displayName) => {
     if (!orderData.products[productType] || orderData.products[productType].length === 0) {
       return null;
     }
     
-    return orderData.products[productType].map((item, index) => (
-      <tr key={`${productType}-${item.id}`} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-        <td className="py-3 px-4 border-b border-gray-200">{displayName}</td>
-        <td className="py-3 px-4 border-b border-gray-200">{item.title}</td>
-        <td className="py-3 px-4 border-b border-gray-200">{item.quantity}</td>
-        <td className="py-3 px-4 border-b border-gray-200">{/* Empty cell for Kgs */}</td>
-      </tr>
-    ));
+    // Sort products by ID before rendering
+    const sortedProducts = sortProductsByID(orderData.products[productType]);
+    
+    return [
+      // Add category header row - updated with a new color
+      <tr key={`${productType}-header`} className="bg-[#2980b9]">
+        <td colSpan="3" className="py-2 px-4 border-b border-gray-300 font-bold text-white text-center">{displayName}</td>
+      </tr>,
+      // Add product rows
+      ...sortedProducts.map((item, index) => (
+        <tr key={`${productType}-${item.id}`} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+          <td className="py-3 px-4 border-b border-gray-200">{item.title}</td>
+          <td className="py-3 px-4 border-b border-gray-200 text-center">{item.quantity}</td>
+          <td className="py-3 px-4 border-b border-gray-200">{/* Empty cell for Kgs */}</td>
+        </tr>
+      ))
+    ];
   };
   
   return (
@@ -449,25 +505,24 @@ const ReviewOrder = () => {
           <table className="w-full border-collapse mt-5 shadow-sm rounded-lg overflow-hidden">
             <thead>
               <tr>
-                <th className="bg-[#3498db] text-white py-3 px-4 text-left">Tipo</th>
-                <th className="bg-[#3498db] text-white py-3 px-4 text-left">Producto</th>
-                <th className="bg-[#3498db] text-white py-3 px-4 text-left">Cantidad</th>
-                <th className="bg-[#3498db] text-white py-3 px-4 text-left">Kgs</th>
+                <th className="bg-[#3498db] text-white py-3 px-4 text-center">Producto</th>
+                <th className="bg-[#3498db] text-white py-3 px-4 text-center">Cantidad</th>
+                <th className="bg-[#3498db] text-white py-3 px-4 text-center">Kgs</th>
               </tr>
             </thead>
             <tbody>
-              {renderProductRows('helados', 'Helado')}
-              {renderProductRows('palitos', 'Palito')}
-              {renderProductRows('postres', 'Postre')}
+              {renderProductRows('helados', 'Helados')}
+              {renderProductRows('palitos', 'Palitos')}
+              {renderProductRows('postres', 'Postres')}
               {renderProductRows('crocker', 'Crocker')}
-              {renderProductRows('dieteticos', 'Dietético')}
+              {renderProductRows('dieteticos', 'Dietéticos')}
               {renderProductRows('buffet', 'Buffet')}
-              {renderProductRows('softs', 'Soft')}
-              {renderProductRows('dulces', 'Dulce')}
-              {renderProductRows('paletas', 'Paleta')}
-              {renderProductRows('bites', 'Bite')}
-              {renderProductRows('barritas', 'Barrita')}
-              {renderProductRows('termicos', 'Térmico')}
+              {renderProductRows('softs', 'Softs')}
+              {renderProductRows('dulces', 'Dulces')}
+              {renderProductRows('paletas', 'Paletas')}
+              {renderProductRows('bites', 'Bites')}
+              {renderProductRows('barritas', 'Barritas')}
+              {renderProductRows('termicos', 'Térmicos')}
             </tbody>
           </table>
         </div>
@@ -489,7 +544,7 @@ const ReviewOrder = () => {
           <>
             <button 
               onClick={handleSavePDF}
-              className="py-3 px-5 text-base rounded font-bold bg-red-500 text-white flex items-center justify-center gap-2.5"
+              className="py-3 px-5 textBase rounded font-bold bg-red-500 text-white flex items-center justify-center gap-2.5"
             >
               {iconPdf && <img src={iconPdf} alt="PDF" className="w-5 h-5" />}
               Guardar PDF
@@ -497,7 +552,7 @@ const ReviewOrder = () => {
             
             <button 
               onClick={handleSendWhatsapp}
-              className="py-3 px-5 text-base rounded font-bold bg-[#25D366] text-white flex items-center justify-center gap-2.5"
+              className="py-3 px-5 textBase rounded font-bold bg-[#25D366] text-white flex items-center justify-center gap-2.5"
             >
               <img src={iconWhatsapp} alt="WhatsApp" className="w-5 h-5" />
               Enviar por WhatsApp
