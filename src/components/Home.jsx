@@ -698,9 +698,10 @@ const Home = () => {
       <div className="mb-6 text-center">
         <button 
           onClick={handleReviewOrder}
-          className={`bg-[#1a5b8c] text-white w-full max-w-[300px] py-3 text-lg rounded font-bold ${
+          className={`bg-[#315988] text-white w-full max-w-[300px] py-3 text-lg rounded font-bold hover:bg-[#052c4e] transition-colors ${
             !selectedSucursal ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
           }`}
+          aria-disabled={!selectedSucursal}
         >
           Revisar Pedido
         </button>
