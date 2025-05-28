@@ -632,7 +632,13 @@ const Home = () => {
   return (
     <div className="w-full max-w-7xl mx-auto p-2.5 font-sans box-border">
       <div className="flex flex-col items-center mb-5">
-        <img src={logoLaFe} alt="Logo La Fe" className="w-30 mb-2" />
+        <img 
+          src={logoLaFe} 
+          alt="Logo La Fe" 
+          className="w-30 mb-2" 
+          width="120" 
+          height="120"
+        />
         <h1 className="text-xl md:text-3xl text-[#2c3e50] my-1 text-center">App Pedidos La Fe</h1>
       </div>
       
