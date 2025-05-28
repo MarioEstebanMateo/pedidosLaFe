@@ -452,8 +452,8 @@ const ReviewOrder = () => {
               {renderProductRows('dulces', 'Dulce')}
               {renderProductRows('paletas', 'Paleta')}
               {renderProductRows('bites', 'Bite')}
-              {renderProductRows('termicos', 'Térmico')}
               {renderProductRows('barritas', 'Barrita')}
+              {renderProductRows('termicos', 'Térmico')}
             </tbody>
           </table>
         </div>

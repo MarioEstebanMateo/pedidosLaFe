@@ -674,8 +674,9 @@ const Home = () => {
       {renderProductSection("Selecciona los Dulces", dulces, dulcesQuantities, handleIncrementDulce, handleDecrementDulce)}
       {renderProductSection("Selecciona las Paletas", paletas, paletasQuantities, handleIncrementPaleta, handleDecrementPaleta)}
       {renderProductSection("Selecciona los Bites", bites, bitesQuantities, handleIncrementBite, handleDecrementBite)}
-      {renderProductSection("Selecciona los Termicos", termicos, termicosQuantities, handleIncrementTermico, handleDecrementTermico)}
       {renderProductSection("Selecciona las Barritas", barritas, barritasQuantities, handleIncrementBarrita, handleDecrementBarrita)}
+      {renderProductSection("Selecciona los Termicos", termicos, termicosQuantities, handleIncrementTermico, handleDecrementTermico)}
+      
       
       <div className="mb-6 text-center">
         <button 
