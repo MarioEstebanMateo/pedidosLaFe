@@ -9,8 +9,7 @@ const Footer = () => {
                     &copy; {new Date().getFullYear()} - La Fe S.A. - Todos los derechos reservados.
                 </p>
                 <p className="text-base mt-2">
-                    Diseñada y Programada por <a href="mailto:memateo@gmail.com" className="text-blue-400 hover:underline">
-                        Mario E. Mateo
+                    Diseñado y desarrollado por <a href="mailto:memateo@gmail.com" className="text-blue-400 hover:underline"> Mario E. Mateo
                     </a> para La Fe S.A.</p>
             </div>
         </footer>
