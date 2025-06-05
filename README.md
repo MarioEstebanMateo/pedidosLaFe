@@ -54,7 +54,7 @@ Sistema web para gestión de pedidos de productos La Fe. Esta aplicación simpli
 
 Collecting workspace informationI'll create a README.md file for your project that explains what the application does, its features, how to set it up, and other relevant information.
 
-````markdown
+```markdown
 # La Fe - Sistema de Pedidos
 
 ![Logo La Fe](src/assets/img/logo-lafe.png)
@@ -100,15 +100,16 @@ Sistema web para gestión de pedidos de productos La Fe. Esta aplicación simpli
 - Node.js (versión 18.x o superior)
 - npm o yarn
 - Cuenta en Supabase con las tablas necesarias
+```
 
 ## Instalación
 
 1. Clone el repositorio:
+
    ```bash
    git clone https://github.com/tu-usuario/pedidosLaFe.git
    cd pedidosLaFe
    ```
-````
 
 2. Instale las dependencias:
 
