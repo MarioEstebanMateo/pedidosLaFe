@@ -1,43 +1,33 @@
 import { createContext, useState, useContext, useCallback } from 'react'
 
+// Product categories configuration for consistent handling
+const PRODUCT_CATEGORIES = [
+  'helados', 'palitos', 'postres', 'crocker', 'dieteticos', 
+  'buffet', 'softs', 'dulces', 'paletas', 'bites', 'termicos', 'barritas'
+]
+
 const OrderContext = createContext()
 
 export const OrderProvider = ({ children }) => {
-  const [orderData, setOrderData] = useState({
-    orderDate: new Date().toISOString().split('T')[0],
-    sucursalId: '',
-    sucursalTitle: '',
-    // Order the quantities in the same sequence
-    heladosQuantities: {},
-    palitosQuantities: {},
-    postresQuantities: {},
-    crockerQuantities: {},
-    dieteticosQuantities: {},
-    buffetQuantities: {},
-    softsQuantities: {},
-    dulcesQuantities: {},
-    paletasQuantities: {},
-    bitesQuantities: {},
-    termicosQuantities: {},
-    barritasQuantities: {},
-    products: {
-      // Order the products in the same sequence
-      helados: [],
-      palitos: [],
-      postres: [],
-      crocker: [],
-      dieteticos: [],
-      buffet: [],
-      softs: [],
-      dulces: [],
-      paletas: [],
-      bites: [],
-      termicos: [],
-      barritas: []
+  const [orderData, setOrderData] = useState(() => {
+    // Initialize state with a single structure
+    const initialState = {
+      orderDate: new Date().toISOString().split('T')[0],
+      sucursalId: '',
+      sucursalTitle: '',
+      products: {}
     }
+    
+    // Initialize quantities and empty product arrays for each category
+    PRODUCT_CATEGORIES.forEach(category => {
+      initialState[`${category}Quantities`] = {}
+      initialState.products[category] = []
+    })
+    
+    return initialState
   })
 
-  // Use useCallback to prevent the function from being recreated on every render
+  // Update order data with memoized callback
   const updateOrderData = useCallback((newData) => {
     setOrderData(prev => ({
       ...prev,
