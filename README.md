@@ -8,7 +8,7 @@ Sistema web para gestión de pedidos de productos La Fe. Esta aplicación simpli
 
 ## Características
 
-- **Selección de Sucursal**: Elija la sucursal para la cual se realiza el pedido
+- **Selección de Sucursal o Cliente**: Elija la sucursal para la cual se realiza el pedido o seleccione "Cliente Varios" para pedidos personalizados
 - **Selección de Fecha de Entrega**: Especifique cuándo debe entregarse el pedido
 - **Categorías de Productos**: Interfaz organizada por categorías:
   - Helados
@@ -41,7 +41,8 @@ Sistema web para gestión de pedidos de productos La Fe. Esta aplicación simpli
 ## Uso
 
 1. Seleccione una fecha de entrega
-2. Seleccione la sucursal para el pedido
+2. Seleccione la sucursal para el pedido o elija "Cliente Varios" para ingresar un cliente personalizado
+   - Si selecciona "Cliente Varios", aparecerá un campo de texto para ingresar el nombre del cliente
 3. Agregue productos por categoría usando los botones + y -
 4. Haga clic en "Revisar Pedido" para ver el resumen
 5. En la página de revisión:
