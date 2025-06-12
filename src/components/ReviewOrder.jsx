@@ -61,10 +61,27 @@ const ReviewOrder = () => {
     
     const pageWidth = doc.internal.pageSize.getWidth();
     
-    // Add document title with sucursal and date
+    // Add logo to the left (1/4 of the page width), but half the previous size
+    const imgData = logoLaFe; // Using the imported logo
+    const imgWidth = pageWidth / 4 * 0.6; // Reduced to (0.6 instead of 0.8)
+    const imgHeight = imgWidth * 0.6; // Maintain aspect ratio
+    const imgX = 5; // Left margin
+    const imgY = 5; // Top margin
+    doc.addImage(imgData, 'PNG', imgX, imgY, imgWidth, imgHeight);
+    
+    // Add document title with sucursal and date centered on the page
     doc.setFontSize(10);
-    doc.text(`Sucursal: ${orderData.sucursalTitle}`, pageWidth / 2, 10, { align: 'center' });
-    doc.text(`Fecha de entrega: ${formatDate(orderData.orderDate)}`, pageWidth / 2, 18, { align: 'center' });
+    
+    // Calculate text widths to center them
+    const sucursalText = `Sucursal: ${orderData.sucursalTitle}`;
+    const fechaText = `Fecha de entrega: ${formatDate(orderData.orderDate)}`;
+    
+    const textWidth1 = doc.getStringUnitWidth(sucursalText) * 10 / doc.internal.scaleFactor;
+    const textWidth2 = doc.getStringUnitWidth(fechaText) * 10 / doc.internal.scaleFactor;
+    
+    // Center the text horizontally
+    doc.text(sucursalText, (pageWidth - textWidth1) / 2, 10);
+    doc.text(fechaText, (pageWidth - textWidth2) / 2, 18);
     
     // Create table data for left and right columns
     const leftTableData = [['Producto', 'Cant', 'Kgs']];
