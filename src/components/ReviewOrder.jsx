@@ -6,6 +6,7 @@ import autoTable from 'jspdf-autotable'
 import logoLaFe from '../assets/img/logo-lafe.png'
 import iconWhatsapp from '../assets/img/iconWhatsapp.png'
 import iconPdf from '../assets/img/iconPdf.png'
+import WhatsappHelp from './WhatsappHelp'
 
 // Product categories configuration
 const PRODUCT_CATEGORIES = [
@@ -317,6 +318,9 @@ const ReviewOrder = () => {
           </>
         )}
       </div>
+      
+      {/* Replace the WhatsApp section with the new component */}
+      <WhatsappHelp />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import supabase from '../db/SupabaseClient'
 import { useOrderContext } from '../context/OrderContext'
 import Swal from 'sweetalert2'
 import logoLaFe from '../assets/img/logo-lafe.png'
+import WhatsappHelp from './WhatsappHelp'
 
 // Define all product categories for consistent management
 const PRODUCT_CATEGORIES = [
@@ -291,6 +292,9 @@ const Home = () => {
           Revisar Pedido
         </button>
       </div>
+      
+      {/* Replace the WhatsApp section with the new component */}
+      <WhatsappHelp />
     </div>
   )
 }
