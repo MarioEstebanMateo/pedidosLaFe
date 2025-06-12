@@ -15,6 +15,8 @@ export const OrderProvider = ({ children }) => {
       orderDate: new Date().toISOString().split('T')[0],
       sucursalId: '',
       sucursalTitle: '',
+      isCustomClient: false,
+      customClientName: '',
       products: {}
     }
     

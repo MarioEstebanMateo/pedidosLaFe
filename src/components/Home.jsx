@@ -31,6 +31,12 @@ const Home = () => {
   const [selectedSucursal, setSelectedSucursal] = useState(orderData.sucursalId || '')
   const [orderDate, setOrderDate] = useState(orderData.orderDate || new Date().toISOString().split('T')[0])
   
+  // Add state for custom client
+  const [customClientName, setCustomClientName] = useState(orderData.customClientName || '')
+  const [showCustomClientField, setShowCustomClientField] = useState(
+    orderData.sucursalId === 'custom' || false
+  )
+  
   // Unified state management for all products and quantities
   const [products, setProducts] = useState({})
   const [quantities, setQuantities] = useState({})
@@ -116,12 +122,38 @@ const Home = () => {
   // Handle sucursal selection
   const handleSucursalChange = (e) => {
     const selectedId = e.target.value
-    const selectedTitle = sucursales.find(s => s.id.toString() === selectedId)?.title || ''
     
-    setSelectedSucursal(selectedId)
-    updateOrderData({ 
-      sucursalId: selectedId,
-      sucursalTitle: selectedTitle
+    if (selectedId === 'custom') {
+      // For custom client selection
+      setSelectedSucursal('custom')
+      setShowCustomClientField(true)
+      updateOrderData({ 
+        sucursalId: 'custom',
+        sucursalTitle: customClientName || 'Cliente Varios',
+        isCustomClient: true
+      })
+    } else {
+      // For regular sucursal selection
+      const selectedTitle = sucursales.find(s => s.id.toString() === selectedId)?.title || ''
+      
+      setSelectedSucursal(selectedId)
+      setShowCustomClientField(false)
+      updateOrderData({ 
+        sucursalId: selectedId,
+        sucursalTitle: selectedTitle,
+        isCustomClient: false,
+        customClientName: '' // Clear custom client name when selecting regular sucursal
+      })
+    }
+  }
+  
+  // Handle custom client name changes
+  const handleCustomClientChange = (e) => {
+    const name = e.target.value
+    setCustomClientName(name)
+    updateOrderData({
+      customClientName: name,
+      sucursalTitle: name || 'Cliente Varios'
     })
   }
 
@@ -132,6 +164,18 @@ const Home = () => {
       Swal.fire({
         title: 'Selecciona una sucursal',
         text: 'Por favor selecciona una sucursal antes de continuar',
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#3498db'
+      })
+      return
+    }
+    
+    // For custom client, validate that a name was entered
+    if (selectedSucursal === 'custom' && !customClientName.trim()) {
+      Swal.fire({
+        title: 'Nombre de cliente requerido',
+        text: 'Por favor ingresa el nombre del cliente',
         icon: 'warning',
         confirmButtonText: 'Entendido',
         confirmButtonColor: '#3498db'
@@ -158,6 +202,8 @@ const Home = () => {
     // Prepare data for context update
     const updateData = {
       orderDate,
+      customClientName: showCustomClientField ? customClientName : '',
+      isCustomClient: showCustomClientField,
       // Map all quantities by category
       ...PRODUCT_CATEGORIES.reduce((acc, category) => {
         acc[`${category.name}Quantities`] = quantities[category.name] || {}
@@ -257,24 +303,46 @@ const Home = () => {
       
       <div className="mb-6 text-center">
         <h2 className="text-[#2c3e50] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">
-          Selecciona la Sucursal
+          Selecciona la Sucursal o Cliente
         </h2>
         <div className="flex flex-col items-center w-full">
           <label htmlFor="sucursalSelect" className="block mb-1 text-sm md:text-base font-bold text-[#2c3e50] text-center">
-            Sucursal:
+            Sucursal o Cliente:
           </label>
           <select 
             id="sucursalSelect"
             className="p-2.5 rounded border border-gray-300 w-auto min-w-[200px] max-w-full mb-5 text-base"
             value={selectedSucursal}
             onChange={handleSucursalChange}
-            aria-label="Seleccionar sucursal"
+            aria-label="Seleccionar sucursal o cliente"
           >
-            <option value="">Selecciona una sucursal</option>
+            <option value="">Selecciona una opción</option>
+            {/* Add the custom client option at the top */}
+            <option value="custom">Clientes Varios</option>
+            {/* Separator for better visual grouping */}
+            <option disabled>──────────</option>
+            {/* Regular sucursales */}
             {sucursales.map((sucursal) => (
               <option key={sucursal.id} value={sucursal.id}>{sucursal.title}</option>
             ))}
           </select>
+          
+          {/* Show custom client input field when 'Cliente Varios' is selected */}
+          {showCustomClientField && (
+            <div className="mb-5 w-full max-w-[300px]">
+              <label htmlFor="customClient" className="block mb-1 text-sm md:text-base font-bold text-[#2c3e50] text-center">
+                Nombre del Cliente:
+              </label>
+              <input
+                id="customClient"
+                type="text"
+                className="p-2.5 rounded border border-gray-300 w-full text-base font-sans"
+                value={customClientName}
+                onChange={handleCustomClientChange}
+                placeholder="Ingrese nombre del cliente"
+              />
+            </div>
+          )}
         </div>
       </div>
       

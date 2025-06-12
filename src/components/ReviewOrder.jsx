@@ -62,25 +62,28 @@ const ReviewOrder = () => {
     const pageWidth = doc.internal.pageSize.getWidth();
     
     // Add logo to the left (1/4 of the page width), but half the previous size
-    const imgData = logoLaFe; // Using the imported logo
-    const imgWidth = pageWidth / 4 * 0.6; // Reduced to (0.6 instead of 0.8)
-    const imgHeight = imgWidth * 0.6; // Maintain aspect ratio
-    const imgX = 5; // Left margin
-    const imgY = 5; // Top margin
+    const imgData = logoLaFe;
+    const imgWidth = pageWidth / 4 * 0.6;
+    const imgHeight = imgWidth * 0.6;
+    const imgX = 5;
+    const imgY = 5;
     doc.addImage(imgData, 'PNG', imgX, imgY, imgWidth, imgHeight);
     
-    // Add document title with sucursal and date centered on the page
+    // Add document title with client/sucursal and date centered on the page
     doc.setFontSize(10);
     
-    // Calculate text widths to center them
-    const sucursalText = `Sucursal: ${orderData.sucursalTitle}`;
+    // Determine appropriate title text based on client type
+    const clientText = orderData.isCustomClient 
+      ? `Cliente: ${orderData.customClientName || 'Cliente Varios'}`
+      : `Sucursal: ${orderData.sucursalTitle}`;
+      
     const fechaText = `Fecha de entrega: ${formatDate(orderData.orderDate)}`;
     
-    const textWidth1 = doc.getStringUnitWidth(sucursalText) * 10 / doc.internal.scaleFactor;
+    const textWidth1 = doc.getStringUnitWidth(clientText) * 10 / doc.internal.scaleFactor;
     const textWidth2 = doc.getStringUnitWidth(fechaText) * 10 / doc.internal.scaleFactor;
     
     // Center the text horizontally
-    doc.text(sucursalText, (pageWidth - textWidth1) / 2, 10);
+    doc.text(clientText, (pageWidth - textWidth1) / 2, 10);
     doc.text(fechaText, (pageWidth - textWidth2) / 2, 18);
     
     // Create table data for left and right columns
@@ -279,7 +282,9 @@ const ReviewOrder = () => {
           <span className="text-[#34495e]">{formatDate(orderData.orderDate)}</span>
         </div>
         <div className="flex justify-between py-2.5 border-b border-gray-100">
-          <span className="font-bold text-[#2c3e50]">Sucursal:</span>
+          <span className="font-bold text-[#2c3e50]">
+            {orderData.isCustomClient ? 'Cliente:' : 'Sucursal:'}
+          </span>
           <span className="text-[#34495e]">{orderData.sucursalTitle}</span>
         </div>
       </div>
