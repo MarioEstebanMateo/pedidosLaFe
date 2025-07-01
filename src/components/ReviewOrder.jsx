@@ -162,6 +162,7 @@ const ReviewOrder = () => {
     }
     
     // Draw right column table if not empty
+    let rightTableEndY = 25;
     if (rightTableData.length > 1) {
       autoTable(doc, {
         startY: 25,
@@ -191,10 +192,29 @@ const ReviewOrder = () => {
           1: { cellWidth: 12, halign: 'center' },
           2: { cellWidth: 30, halign: 'center' }
         },
-        tableWidth: (pageWidth / 2)
+        tableWidth: (pageWidth / 2),
+        didDrawPage: (data) => {
+          rightTableEndY = data.cursor.y;
+        }
       });
     }
-    
+
+    // Add Observaciones at the bottom of the right column if Sucursal Centro
+    if (
+      orderData.sucursalTitle === 'Centro' &&
+      orderData.observaciones &&
+      orderData.observaciones.trim() !== ''
+    ) {
+      // Place it a bit below the last table row
+      const obsY = Math.max(rightTableEndY + 10, 60);
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Observaciones:', pageWidth / 2 + 5, obsY);
+      doc.setFontSize(9);
+      doc.setTextColor(60, 60, 60);
+      doc.text(orderData.observaciones, pageWidth / 2 + 5, obsY + 7, { maxWidth: pageWidth / 2 - 10 });
+    }
+
     return doc;
   }
   
@@ -305,6 +325,13 @@ const ReviewOrder = () => {
               )}
             </tbody>
           </table>
+          {/* Observaciones for Centro, visible in review */}
+          {orderData.sucursalTitle === 'Centro' && orderData.observaciones && orderData.observaciones.trim() !== '' && (
+            <div className="mt-6 text-right">
+              <div className="font-bold text-[#2c3e50]">Observaciones:</div>
+              <div className="text-[#34495e] whitespace-pre-line">{orderData.observaciones}</div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-10 text-gray-500 text-lg">

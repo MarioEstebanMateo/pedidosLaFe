@@ -17,6 +17,7 @@ export const OrderProvider = ({ children }) => {
       sucursalTitle: '',
       isCustomClient: false,
       customClientName: '',
+      observaciones: '', // <-- Add this line
       products: {}
     }
     

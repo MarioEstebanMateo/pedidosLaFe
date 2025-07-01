@@ -40,6 +40,7 @@ const Home = () => {
   // Unified state management for all products and quantities
   const [products, setProducts] = useState({})
   const [quantities, setQuantities] = useState({})
+  const [observaciones, setObservaciones] = useState(orderData.observaciones || '')
 
   useEffect(() => {
     testSupabaseConnection().then(isConnected => {
@@ -121,8 +122,7 @@ const Home = () => {
 
   // Handle sucursal selection
   const handleSucursalChange = (e) => {
-    const selectedId = e.target.value
-    
+    const selectedId = e.target.value;
     if (selectedId === 'custom') {
       // For custom client selection
       setSelectedSucursal('custom')
@@ -133,17 +133,20 @@ const Home = () => {
         isCustomClient: true
       })
     } else {
-      // For regular sucursal selection
-      const selectedTitle = sucursales.find(s => s.id.toString() === selectedId)?.title || ''
-      
-      setSelectedSucursal(selectedId)
-      setShowCustomClientField(false)
+      const selectedTitle = sucursales.find(s => s.id.toString() === selectedId)?.title || '';
+      setSelectedSucursal(selectedId);
+      setShowCustomClientField(false);
       updateOrderData({ 
         sucursalId: selectedId,
         sucursalTitle: selectedTitle,
         isCustomClient: false,
-        customClientName: '' // Clear custom client name when selecting regular sucursal
-      })
+        customClientName: ''
+      });
+      // Reset observaciones if not centro
+      if (selectedTitle !== 'Centro') {
+        setObservaciones('');
+        updateOrderData({ observaciones: '' });
+      }
     }
   }
   
@@ -155,6 +158,12 @@ const Home = () => {
       customClientName: name,
       sucursalTitle: name || 'Cliente Varios'
     })
+  }
+
+  // Handle observaciones change
+  const handleObservacionesChange = (e) => {
+    setObservaciones(e.target.value);
+    updateOrderData({ observaciones: e.target.value });
   }
 
   // Handle the "Revisar Pedido" button click
@@ -340,6 +349,22 @@ const Home = () => {
                 value={customClientName}
                 onChange={handleCustomClientChange}
                 placeholder="Ingrese nombre del cliente"
+              />
+            </div>
+          )}
+          {/* Observaciones field for Sucursal Centro */}
+          {sucursales.find(s => s.id.toString() === selectedSucursal && s.title === 'Centro') && (
+            <div className="mb-5 w-full max-w-[400px] mx-auto">
+              <label htmlFor="observaciones" className="block mb-1 text-sm md:text-base font-bold text-[#2c3e50] text-center">
+                Observaciones:
+              </label>
+              <textarea
+                id="observaciones"
+                className="p-2.5 rounded border border-gray-300 w-full text-base font-sans"
+                value={observaciones}
+                onChange={handleObservacionesChange}
+                placeholder="Ingrese observaciones para Centro"
+                rows={3}
               />
             </div>
           )}
