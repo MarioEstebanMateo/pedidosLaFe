@@ -24,6 +24,11 @@ const PRODUCT_CATEGORIES = [
   { name: 'termicos', displayName: 'Térmicos', column: 'right' }
 ]
 
+const getHeladosTotal = (orderData) => {
+  const helados = orderData.products.helados || [];
+  return helados.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+};
+
 const ReviewOrder = () => {
   const { orderData } = useOrderContext()
   const navigate = useNavigate()
@@ -288,12 +293,18 @@ const ReviewOrder = () => {
   }
   
   // Unified function to render product rows in table
-  const renderProductRows = (productType, displayName) => {
+  const renderProductRows = (productType, displayName, showTotal = false) => {
     const products = orderData.products[productType]
     if (!products || products.length === 0) return null;
-    
+
     const sortedProducts = sortProductsByID(products);
-    
+
+    // Calculate total if needed
+    let total = 0;
+    if (showTotal) {
+      total = sortedProducts.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    }
+
     return [
       <tr key={`${productType}-header`} className="bg-[#2980b9]">
         <td colSpan="3" className="py-2 px-4 border-b border-gray-300 font-bold text-white text-center">{displayName}</td>
@@ -302,9 +313,17 @@ const ReviewOrder = () => {
         <tr key={`${productType}-${item.id}`} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
           <td className="py-3 px-4 border-b border-gray-200">{item.title}</td>
           <td className="py-3 px-4 border-b border-gray-200 text-center">{item.quantity}</td>
-          <td className="py-3 px-4 border-b border-gray-200">{/* Empty cell for Kgs */}</td>
+          <td className="py-3 px-4 border-b border-gray-200"></td>
         </tr>
-      ))
+      )),
+      // Add total row if showTotal is true and there are products
+      showTotal && sortedProducts.length > 0 ? (
+        <tr key={`${productType}-total`} className="bg-gray-200 font-bold">
+          <td className="py-2 px-4 border-t border-gray-400 text-right">Total</td>
+          <td className="py-2 px-4 border-t border-gray-400 text-center">{total}</td>
+          <td className="py-2 px-4 border-t border-gray-400"></td>
+        </tr>
+      ) : null
     ];
   };
   
@@ -339,8 +358,9 @@ const ReviewOrder = () => {
               </tr>
             </thead>
             <tbody>
-              {PRODUCT_CATEGORIES.map(category => 
-                renderProductRows(category.name, category.displayName)
+              {PRODUCT_CATEGORIES.map(category =>
+                // Only show total for helados (left column)
+                renderProductRows(category.name, category.displayName, category.name === 'helados')
               )}
             </tbody>
           </table>
