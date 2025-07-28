@@ -127,6 +127,25 @@ const ReviewOrder = () => {
       }
     });
     
+    // Calculate total for Cant column in leftTableData
+    let leftCantTotal = 0;
+    for (let i = 1; i < leftTableData.length; i++) {
+      const row = leftTableData[i];
+      // Only sum rows that are not category headers (which are objects)
+      if (Array.isArray(row) && typeof row[1] !== 'undefined' && !isNaN(Number(row[1]))) {
+        leftCantTotal += Number(row[1]);
+      }
+    }
+
+    // Add total row if there are products in the left column
+    if (leftTableData.length > 1) {
+      leftTableData.push([
+        { content: 'Total', colSpan: 1, styles: { fontStyle: 'bold', halign: 'right' } },
+        { content: leftCantTotal.toString(), styles: { fontStyle: 'bold', halign: 'center' } },
+        ''
+      ]);
+    }
+    
     // Draw left column table if not empty
     if (leftTableData.length > 1) {
       autoTable(doc, {
