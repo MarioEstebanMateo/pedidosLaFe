@@ -297,7 +297,10 @@ const ReviewOrder = () => {
     const products = orderData.products[productType]
     if (!products || products.length === 0) return null;
 
-    const sortedProducts = sortProductsByID(products);
+    // Sort alphabetically for display if sort was active in Home
+    const sortedProducts = (orderData.sortAlphabetically && orderData.sortAlphabetically[productType])
+      ? [...products].sort((a, b) => a.title.localeCompare(b.title))
+      : sortProductsByID(products);
 
     // Calculate total if needed
     let total = 0;

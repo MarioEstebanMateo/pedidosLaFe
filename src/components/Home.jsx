@@ -41,6 +41,9 @@ const Home = () => {
   const [products, setProducts] = useState({})
   const [quantities, setQuantities] = useState({})
   const [observaciones, setObservaciones] = useState(orderData.observaciones || '')
+  
+  // State for sorting products alphabetically
+  const [sortAlphabetically, setSortAlphabetically] = useState({})
 
   useEffect(() => {
     testSupabaseConnection().then(isConnected => {
@@ -110,6 +113,14 @@ const Home = () => {
         ...prev[category],
         [id]: Math.max(0, (prev[category]?.[id] || 0) + (increment ? 1 : -1))
       }
+    }))
+  }
+  
+  // Handler to toggle alphabetical sorting for a category
+  const toggleSortAlphabetically = (categoryName) => {
+    setSortAlphabetically(prev => ({
+      ...prev,
+      [categoryName]: !prev[categoryName]
     }))
   }
 
@@ -213,6 +224,7 @@ const Home = () => {
       orderDate,
       customClientName: showCustomClientField ? customClientName : '',
       isCustomClient: showCustomClientField,
+      sortAlphabetically, // Pass sort preferences
       // Map all quantities by category
       ...PRODUCT_CATEGORIES.reduce((acc, category) => {
         acc[`${category.name}Quantities`] = quantities[category.name] || {}
@@ -247,13 +259,33 @@ const Home = () => {
     
     if (!categoryProducts || categoryProducts.length === 0) return null
     
+    // Sort products based on the state
+    const sortedProducts = [...categoryProducts]
+    if (sortAlphabetically[categoryName]) {
+      sortedProducts.sort((a, b) => a.title.localeCompare(b.title))
+    }
+    
     return (
       <div className="mb-6 text-center" key={categoryName}>
-        <h2 className="text-[#2c3e50] text-lg md:text-2xl mb-3 pb-2 border-b-2 border-gray-100 text-center">
-          Selecciona los {category.displayName}
-        </h2>
+        <div className="flex flex-col items-center gap-2 mb-3">
+          <h2 className="text-[#2c3e50] text-lg md:text-2xl pb-2 border-b-2 border-gray-100 text-center">
+            Selecciona los {category.displayName}
+          </h2>
+          {categoryName === 'helados' && (
+            <button
+              onClick={() => toggleSortAlphabetically(categoryName)}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm ${
+                sortAlphabetically[categoryName]
+                  ? 'bg-[#315988] text-white hover:bg-[#052c4e] hover:shadow-md'
+                  : 'bg-white text-[#315988] border-2 border-[#315988] hover:bg-[#315988] hover:text-white'
+              }`}
+            >
+              {sortAlphabetically[categoryName] ? '✓ Ordenado Alfabéticamente' : 'Ordenar Alfabéticamente'}
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 max-w-3xl mx-auto">
-          {categoryProducts.map((product) => (
+          {sortedProducts.map((product) => (
             <div key={product.id} className="border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-all flex flex-col h-full">
               <div className="flex-grow flex items-center justify-center">
                 <h3 className="text-base font-bold mb-2.5 text-center">{product.title}</h3>
