@@ -42,8 +42,8 @@ const Home = () => {
   const [quantities, setQuantities] = useState({})
   const [observaciones, setObservaciones] = useState(orderData.observaciones || '')
   
-  // State for sorting products alphabetically
-  const [sortAlphabetically, setSortAlphabetically] = useState({})
+  // State for sorting products alphabetically - initialize from context
+  const [sortAlphabetically, setSortAlphabetically] = useState(orderData.sortAlphabetically || {})
 
   useEffect(() => {
     testSupabaseConnection().then(isConnected => {
@@ -118,10 +118,15 @@ const Home = () => {
   
   // Handler to toggle alphabetical sorting for a category
   const toggleSortAlphabetically = (categoryName) => {
-    setSortAlphabetically(prev => ({
-      ...prev,
-      [categoryName]: !prev[categoryName]
-    }))
+    setSortAlphabetically(prev => {
+      const newState = {
+        ...prev,
+        [categoryName]: !prev[categoryName]
+      }
+      // Update context immediately
+      updateOrderData({ sortAlphabetically: newState })
+      return newState
+    })
   }
 
   // Handle date change
