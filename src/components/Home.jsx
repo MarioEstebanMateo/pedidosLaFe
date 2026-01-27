@@ -426,14 +426,21 @@ const Home = () => {
       {/* Replace the WhatsApp section with the new component */}
       <WhatsappHelp />
 
-      <div className="text-center">
-  <button 
-    onClick={() => navigate('/admin-login')}
-    className="text-gray-500 text-sm hover:text-gray-700 transition-colors"
-  >
-    Acceso Administrativo
-  </button>
-</div>
+      <div className="text-center space-y-3">
+        <button 
+          onClick={() => navigate('/tutorial')}
+          className="text-blue-600 text-sm font-semibold hover:text-blue-800 transition-colors flex items-center justify-center gap-2 mx-auto"
+        >
+          <span>📖</span>
+          ¿Cómo usar la aplicación?
+        </button>
+        <button 
+          onClick={() => navigate('/admin-login')}
+          className="text-gray-500 text-sm hover:text-gray-700 transition-colors block mx-auto"
+        >
+          Acceso Administrativo
+        </button>
+      </div>
     </div>
   )
 }

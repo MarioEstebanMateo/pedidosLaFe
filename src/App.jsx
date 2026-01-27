@@ -4,6 +4,7 @@ import Home from '../src/components/Home'
 import ReviewOrder from '../src/components/ReviewOrder'
 import Admin from '../src/components/Admin'
 import AdminLogin from '../src/components/AdminLogin'
+import Tutorial from '../src/components/Tutorial'
 import Footer from './components/Footer'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/review" element={<ReviewOrder />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/lafeadmin" element={<Admin />} />
+          <Route path="/tutorial" element={<Tutorial />} />
         </Routes>
         <Footer />
       </BrowserRouter>
