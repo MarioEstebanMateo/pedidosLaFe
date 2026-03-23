@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useOrderContext } from '../context/OrderContext'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import supabase from '../db/SupabaseClient'
+import Swal from 'sweetalert2'
 import logoLaFe from '../assets/img/logo-lafe.png'
 import iconWhatsapp from '../assets/img/iconWhatsapp.png'
 import iconPdf from '../assets/img/iconPdf.png'
@@ -241,7 +243,46 @@ const ReviewOrder = () => {
     return doc;
   }
   
-  const handleSavePDF = () => {
+  // Función para guardar el pedido en la base de datos
+  const savePedidoToDatabase = async () => {
+    try {
+      // Preparar los datos del pedido
+      const pedidoData = {
+        fecha_entrega: orderData.orderDate,
+        sucursal: orderData.sucursalTitle,
+        cliente_personalizado: orderData.isCustomClient ? orderData.customClientName : null,
+        productos: orderData.products,
+        observaciones: orderData.observaciones || null,
+        estado: 'procesado'
+      }
+      
+      // Guardar en Supabase
+      const { data, error } = await supabase
+        .from('pedidos')
+        .insert([pedidoData])
+        .select()
+      
+      if (error) {
+        console.error('Error guardando pedido:', error)
+        Swal.fire({
+          icon: 'warning',
+          title: 'Advertencia',
+          text: 'El PDF se guardó pero no se pudo registrar en el historial'
+        })
+        return null
+      }
+      
+      return data[0].id
+    } catch (error) {
+      console.error('Error:', error)
+      return null
+    }
+  }
+  
+  const handleSavePDF = async () => {
+    // Guardar en BD primero
+    await savePedidoToDatabase()
+    
     const doc = generatePDF()
     const pdfBlob = doc.output('blob')
     const pdfUrl = URL.createObjectURL(pdfBlob)
@@ -254,7 +295,10 @@ const ReviewOrder = () => {
     document.body.removeChild(link)
   }
   
-  const handleSendWhatsapp = () => {
+  const handleSendWhatsapp = async () => {
+    // Guardar en BD primero
+    await savePedidoToDatabase()
+    
     const doc = generatePDF()
     const pdfBlob = doc.output('blob')
     

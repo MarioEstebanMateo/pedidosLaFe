@@ -2,32 +2,52 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../db/SupabaseClient';
 import Swal from 'sweetalert2';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import logoLaFe from '../assets/img/logo-lafe.png';
 
 // Product categories configuration matching the existing system
 const PRODUCT_CATEGORIES = [
-  { name: 'helados', displayName: 'Helados' },
-  { name: 'palitos', displayName: 'Palitos' },
-  { name: 'postres', displayName: 'Postres' },
-  { name: 'crocker', displayName: 'Crocker' },
-  { name: 'dieteticos', displayName: 'Dietéticos' },
-  { name: 'buffet', displayName: 'Buffet' },
-  { name: 'softs', displayName: 'Softs y Yogurts' },
-  { name: 'dulces', displayName: 'Dulces' },
-  { name: 'paletas', displayName: 'Paletas' },
-  { name: 'bites', displayName: 'Bites' },
-  { name: 'barritas', displayName: 'Barritas' },
-  { name: 'termicos', displayName: 'Térmicos' }
+  { name: 'helados', displayName: 'Helados', column: 'left' },
+  { name: 'palitos', displayName: 'Palitos', column: 'right' },
+  { name: 'postres', displayName: 'Postres', column: 'right' },
+  { name: 'crocker', displayName: 'Crocker', column: 'right' },
+  { name: 'dieteticos', displayName: 'Dietéticos', column: 'right' },
+  { name: 'buffet', displayName: 'Buffet', column: 'right' },
+  { name: 'softs', displayName: 'Softs y Yogurts', column: 'right' },
+  { name: 'dulces', displayName: 'Dulces', column: 'right' },
+  { name: 'paletas', displayName: 'Paletas', column: 'right' },
+  { name: 'bites', displayName: 'Bites', column: 'right' },
+  { name: 'barritas', displayName: 'Barritas', column: 'right' },
+  { name: 'termicos', displayName: 'Térmicos', column: 'right' }
 ];
+
+// Helper function to format dates
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  return `${dayNames[date.getUTCDay()]} ${day} de ${monthNames[date.getUTCMonth()]} de ${year}`;
+};
+
+// Helper function to sort products by ID
+const sortProductsByID = (products) => {
+  return [...products].sort((a, b) => a.id - b.id);
+};
 
 const Admin = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [adminMode, setAdminMode] = useState('productos'); // 'productos' or 'sucursales'
+  const [adminMode, setAdminMode] = useState('productos'); // 'productos', 'sucursales' or 'historial'
   const [currentCategory, setCurrentCategory] = useState(PRODUCT_CATEGORIES[0].name);
   const [products, setProducts] = useState([]);
   const [sucursales, setSucursales] = useState([]);
+  const [pedidos, setPedidos] = useState([]);
+  const [selectedPedido, setSelectedPedido] = useState(null);
   const [newProductTitle, setNewProductTitle] = useState('');
   const [newSucursalTitle, setNewSucursalTitle] = useState('');
   
@@ -78,7 +98,7 @@ const Admin = () => {
     };
     
     checkAuth();
-  }, [navigate]);
+  }, [navigate, currentCategory]);
   
   // Load products/sucursales when category changes or mode changes (but only if authenticated)
   useEffect(() => {
@@ -137,6 +157,213 @@ const Admin = () => {
   
   const handleCategoryChange = (category) => {
     setCurrentCategory(category);
+  };
+  
+  const loadPedidos = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('pedidos')
+        .select('*')
+        .order('fecha_creacion', { ascending: false });
+      
+      if (error) throw error;
+      setPedidos(data || []);
+      setSelectedPedido(null);
+    } catch (error) {
+      console.error('Error loading pedidos:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron cargar los pedidos'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const generarPDFPedido = (pedido) => {
+    const doc = new jsPDF({
+      format: 'a4',
+      unit: 'mm',
+      margins: { top: 1, bottom: 1, left: 1, right: 1 }
+    });
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Add logo to the left (1/4 of the page width)
+    const imgData = logoLaFe;
+    const imgWidth = pageWidth / 4 * 0.6;
+    const imgHeight = imgWidth * 0.6;
+    const imgX = 5;
+    const imgY = 5;
+    doc.addImage(imgData, 'PNG', imgX, imgY, imgWidth, imgHeight);
+    
+    // Add document title with client/sucursal and date centered
+    doc.setFontSize(10);
+    
+    const clientText = pedido.cliente_personalizado 
+      ? `Cliente: ${pedido.cliente_personalizado}`
+      : `Sucursal: ${pedido.sucursal}`;
+    const fechaText = `Fecha de entrega: ${formatDate(pedido.fecha_entrega)}`;
+    
+    const textWidth1 = doc.getStringUnitWidth(clientText) * 10 / doc.internal.scaleFactor;
+    const textWidth2 = doc.getStringUnitWidth(fechaText) * 10 / doc.internal.scaleFactor;
+    
+    doc.text(clientText, (pageWidth - textWidth1) / 2, 10);
+    doc.text(fechaText, (pageWidth - textWidth2) / 2, 18);
+    
+    // Create table data for left and right columns
+    const leftTableData = [['Producto', 'Cant', 'Kgs']];
+    const rightTableData = [['Producto', 'Cant', 'Kgs']];
+    
+    // Count total products to determine font size
+    const totalProducts = PRODUCT_CATEGORIES.reduce((count, category) => 
+      count + (pedido.productos[category.name]?.length || 0), 0);
+    
+    const useTinyFont = totalProducts > 50;
+    const baseFontSize = useTinyFont ? 7 : 8;
+    const headerFontSize = useTinyFont ? 7 : 8;
+    const cellPadding = useTinyFont ? 1 : 1.5;
+    
+    // Add products to appropriate column
+    PRODUCT_CATEGORIES.forEach(category => {
+      const { name, displayName, column } = category;
+      const products = pedido.productos[name] || [];
+      
+      if (products.length > 0) {
+        const targetTable = column === 'left' ? leftTableData : rightTableData;
+        
+        // Add category header
+        targetTable.push([{ 
+          content: displayName, 
+          colSpan: 3, 
+          styles: { 
+            fontStyle: 'bold', 
+            fillColor: [0, 0, 0],
+            textColor: [255, 255, 255], 
+            halign: 'center' 
+          } 
+        }]);
+        
+        // Add sorted products
+        const sortedProducts = sortProductsByID(products);
+        sortedProducts.forEach(item => {
+          targetTable.push([item.title, item.quantity, '']);
+        });
+      }
+    });
+    
+    // Calculate total for Cant column in leftTableData
+    let leftCantTotal = 0;
+    for (let i = 1; i < leftTableData.length; i++) {
+      const row = leftTableData[i];
+      if (Array.isArray(row) && typeof row[1] !== 'undefined' && !isNaN(Number(row[1]))) {
+        leftCantTotal += Number(row[1]);
+      }
+    }
+
+    // Add total row if there are products in the left column
+    if (leftTableData.length > 1) {
+      leftTableData.push([
+        { content: 'Total', colSpan: 1, styles: { fontStyle: 'bold', halign: 'right' } },
+        { content: leftCantTotal.toString(), styles: { fontStyle: 'bold', halign: 'center' } },
+        ''
+      ]);
+    }
+    
+    // Draw left column table if not empty
+    if (leftTableData.length > 1) {
+      autoTable(doc, {
+        startY: 25,
+        margin: { left: 5, right: pageWidth / 2 + 1 },
+        head: [leftTableData[0]],
+        body: leftTableData.slice(1),
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [0, 0, 0],
+          textColor: [255, 255, 255], 
+          fontSize: headerFontSize,
+          cellPadding: cellPadding,
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0],
+          halign: 'center'
+        },
+        styles: {
+          fontSize: baseFontSize,
+          cellPadding: cellPadding,
+          overflow: 'linebreak',
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0],
+          textColor: [0, 0, 0]
+        },
+        columnStyles: {
+          0: { cellWidth: 40 },
+          1: { cellWidth: 12, halign: 'center' },
+          2: { cellWidth: 30, halign: 'center' }
+        },
+        tableWidth: (pageWidth / 2)
+      });
+    }
+    
+    // Draw right column table if not empty
+    let rightTableEndY = 25;
+    if (rightTableData.length > 1) {
+      autoTable(doc, {
+        startY: 25,
+        margin: { left: pageWidth / 2 - 1, right: 5 },
+        head: [rightTableData[0]],
+        body: rightTableData.slice(1),
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [0, 0, 0],
+          textColor: [255, 255, 255], 
+          fontSize: headerFontSize,
+          cellPadding: cellPadding,
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0],
+          halign: 'center'
+        },
+        styles: {
+          fontSize: baseFontSize,
+          cellPadding: cellPadding,
+          overflow: 'linebreak',
+          lineWidth: 0.1,
+          lineColor: [0, 0, 0],
+          textColor: [0, 0, 0]
+        },
+        columnStyles: {
+          0: { cellWidth: 50 },
+          1: { cellWidth: 12, halign: 'center' },
+          2: { cellWidth: 30, halign: 'center' }
+        },
+        tableWidth: (pageWidth / 2),
+        didDrawPage: (data) => {
+          rightTableEndY = data.cursor.y;
+        }
+      });
+    }
+
+    // Add Observaciones to PDF if present
+    if (pedido.observaciones && pedido.observaciones.trim() !== '') {
+      const obsY = Math.max(rightTableEndY + 10, 60);
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+      doc.text('Observaciones:', pageWidth / 2 + 5, obsY);
+      doc.setFontSize(9);
+      doc.setTextColor(60, 60, 60);
+      doc.text(pedido.observaciones, pageWidth / 2 + 5, obsY + 7, { maxWidth: pageWidth / 2 - 10 });
+    }
+    
+    // Download
+    doc.save(`Pedido_LaFe_${pedido.sucursal || pedido.cliente_personalizado}_${formatDate(pedido.fecha_entrega).replace(/\//g, '-')}_reimpresion_admin.pdf`);
+  };
+  
+  const handleAdminModeChange = (mode) => {
+    setAdminMode(mode);
+    if (mode === 'historial') {
+      loadPedidos();
+    }
   };
   
   const handleAddProduct = async () => {
@@ -274,7 +501,7 @@ const Admin = () => {
     }
   };
   
-  const handleToggleVisibility = async (id, currentVisibility, title) => {
+  const handleToggleVisibility = async (id, currentVisibility) => {
     try {
       setIsLoading(true);
       
@@ -480,9 +707,9 @@ const Admin = () => {
       </div>
       
       {/* Mode Selection Buttons */}
-      <div className="mb-6 flex gap-3 justify-center">
+      <div className="mb-6 flex gap-3 justify-center flex-wrap">
         <button
-          onClick={() => setAdminMode('productos')}
+          onClick={() => handleAdminModeChange('productos')}
           className={`px-6 py-2 rounded-lg font-medium transition-colors ${
             adminMode === 'productos'
               ? 'bg-blue-600 text-white'
@@ -492,7 +719,7 @@ const Admin = () => {
           Gestión de Productos
         </button>
         <button
-          onClick={() => setAdminMode('sucursales')}
+          onClick={() => handleAdminModeChange('sucursales')}
           className={`px-6 py-2 rounded-lg font-medium transition-colors ${
             adminMode === 'sucursales'
               ? 'bg-blue-600 text-white'
@@ -501,6 +728,16 @@ const Admin = () => {
         >
           Gestión de Sucursales
         </button>
+        <button
+          onClick={() => handleAdminModeChange('historial')}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            adminMode === 'historial'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Historial de Pedidos
+        </button>
       </div>
       
       <div className="bg-white rounded-lg shadow-md p-5 mb-6">
@@ -508,10 +745,10 @@ const Admin = () => {
           <h2 className="text-xl font-bold text-[#2c3e50]">
             {adminMode === 'productos' 
               ? `Gestión de ${PRODUCT_CATEGORIES.find(c => c.name === currentCategory).displayName}`
-              : 'Gestión de Sucursales'
-            }
+            : adminMode === 'sucursales'
+            ? 'Gestión de Sucursales'
+            : 'Historial de Pedidos'}
           </h2>
-          
           <button 
             onClick={handleLogout}
             className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded transition-colors"
@@ -582,7 +819,7 @@ const Admin = () => {
                         </td>
                         <td className="py-2 px-4 text-center">
                           <button
-                            onClick={() => handleToggleVisibility(product.id, product.visible, product.title)}
+                            onClick={() => handleToggleVisibility(product.id, product.visible)}
                             className={`py-1 px-3 rounded mr-2 text-sm text-white transition-colors ${
                               product.visible 
                                 ? 'bg-yellow-500 hover:bg-yellow-600' 
@@ -679,6 +916,149 @@ const Admin = () => {
                 </tbody>
               </table>
             </div>
+          </>
+        )}
+        
+        {/* Historial de Pedidos Section */}
+        {adminMode === 'historial' && (
+          <>
+            {selectedPedido ? (
+              <div>
+                <button
+                  onClick={() => setSelectedPedido(null)}
+                  className="mb-4 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded transition-colors"
+                >
+                  ← Volver al listado
+                </button>
+                
+                <div className="flex flex-col items-center mb-6">
+                  <img src={logoLaFe} alt="Logo La Fe" className="w-24 mb-2" />
+                </div>
+                
+                <div className="bg-gray-50 p-5 rounded-lg mb-5 shadow-sm">
+                  <div className="flex justify-between py-2.5 border-b border-gray-100">
+                    <span className="font-bold text-[#2c3e50]">Fecha de entrega:</span>
+                    <span className="text-[#34495e]">{formatDate(selectedPedido.fecha_entrega)}</span>
+                  </div>
+                  <div className="flex justify-between py-2.5 border-b border-gray-100">
+                    <span className="font-bold text-[#2c3e50]">
+                      {selectedPedido.cliente_personalizado ? 'Cliente:' : 'Sucursal:'}
+                    </span>
+                    <span className="text-[#34495e]">{selectedPedido.cliente_personalizado || selectedPedido.sucursal}</span>
+                  </div>
+                </div>
+                
+                <div>
+                  <table className="w-full border-collapse mt-5 shadow-sm rounded-lg overflow-hidden">
+                    <thead>
+                      <tr>
+                        <th className="bg-[#3498db] text-white py-3 px-4 text-center">Producto</th>
+                        <th className="bg-[#3498db] text-white py-3 px-4 text-center">Cantidad</th>
+                        <th className="bg-[#3498db] text-white py-3 px-4 text-center">Kgs</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {PRODUCT_CATEGORIES.map((category) => {
+                        const productos = selectedPedido.productos[category.name] || [];
+                        if (productos.length === 0) return null;
+                        
+                        const sortedProducts = sortProductsByID(productos);
+                        const total = sortedProducts.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+                        const isHeladosCategory = category.name === 'helados';
+                        
+                        return [
+                          <tr key={`${category.name}-header`} className="bg-[#2980b9]">
+                            <td colSpan="3" className="py-2 px-4 border-b border-gray-300 font-bold text-white text-center">{category.displayName}</td>
+                          </tr>,
+                          ...sortedProducts.map((item, index) => (
+                            <tr key={`${category.name}-${item.id}`} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                              <td className="py-3 px-4 border-b border-gray-200">{item.title}</td>
+                              <td className="py-3 px-4 border-b border-gray-200 text-center">{item.quantity}</td>
+                              <td className="py-3 px-4 border-b border-gray-200"></td>
+                            </tr>
+                          )),
+                          isHeladosCategory && sortedProducts.length > 0 ? (
+                            <tr key={`${category.name}-total`} className="bg-gray-200 font-bold">
+                              <td className="py-2 px-4 border-t border-gray-400 text-right">Total</td>
+                              <td className="py-2 px-4 border-t border-gray-400 text-center">{total}</td>
+                              <td className="py-2 px-4 border-t border-gray-400"></td>
+                            </tr>
+                          ) : null
+                        ];
+                      }).flat()}
+                    </tbody>
+                  </table>
+                  
+                  {selectedPedido.observaciones && selectedPedido.observaciones.trim() !== '' && (
+                    <div className="mt-6 text-right">
+                      <div className="font-bold text-[#2c3e50]">Observaciones:</div>
+                      <div className="text-[#34495e] whitespace-pre-line">{selectedPedido.observaciones}</div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex gap-2 mt-6">
+                  <button
+                    onClick={() => generarPDFPedido(selectedPedido)}
+                    className="bg-red-500 hover:bg-red-600 text-white py-3 px-5 rounded font-bold transition-colors"
+                  >
+                    📥 Descargar PDF
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                {pedidos.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white border-collapse border border-gray-300">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="py-3 px-4 text-left border-b">ID Pedido</th>
+                          <th className="py-3 px-4 text-left border-b">Fecha</th>
+                          <th className="py-3 px-4 text-left border-b">Cliente/Sucursal</th>
+                          <th className="py-3 px-4 text-center border-b">Items</th>
+                          <th className="py-3 px-4 text-center border-b">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pedidos.map((pedido) => {
+                          const totalItems = Object.values(pedido.productos).reduce((sum, products) => {
+                            return sum + (products ? products.reduce((s, p) => s + p.quantity, 0) : 0);
+                          }, 0);
+                          
+                          return (
+                            <tr key={pedido.id} className="border-b hover:bg-gray-50">
+                              <td className="py-3 px-4">#{pedido.id}</td>
+                              <td className="py-3 px-4">{new Date(pedido.fecha_creacion).toLocaleDateString('es-AR')}</td>
+                              <td className="py-3 px-4">{pedido.cliente_personalizado || pedido.sucursal}</td>
+                              <td className="py-3 px-4 text-center">{totalItems}</td>
+                              <td className="py-3 px-4 text-center">
+                                <button
+                                  onClick={() => setSelectedPedido(pedido)}
+                                  className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded mr-2 text-sm transition-colors"
+                                >
+                                  Ver detalles
+                                </button>
+                                <button
+                                  onClick={() => generarPDFPedido(pedido)}
+                                  className="bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded text-sm transition-colors"
+                                >
+                                  PDF
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="py-8 text-center text-gray-500">
+                    No hay pedidos registrados
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
