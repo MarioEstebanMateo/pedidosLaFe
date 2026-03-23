@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../db/SupabaseClient';
 import Swal from 'sweetalert2';
@@ -48,6 +48,10 @@ const Admin = () => {
   const [sucursales, setSucursales] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [selectedPedido, setSelectedPedido] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [sortColumn, setSortColumn] = useState('fecha_creacion');
+  const [sortDirection, setSortDirection] = useState('desc');
   const [newProductTitle, setNewProductTitle] = useState('');
   const [newSucursalTitle, setNewSucursalTitle] = useState('');
   
@@ -170,6 +174,7 @@ const Admin = () => {
       if (error) throw error;
       setPedidos(data || []);
       setSelectedPedido(null);
+      setCurrentPage(1); // Reset to first page when loading new data
     } catch (error) {
       console.error('Error loading pedidos:', error);
       Swal.fire({
@@ -357,6 +362,73 @@ const Admin = () => {
     
     // Download
     doc.save(`Pedido_LaFe_${pedido.sucursal || pedido.cliente_personalizado}_${formatDate(pedido.fecha_entrega).replace(/\//g, '-')}_reimpresion_admin.pdf`);
+  };
+  
+  // Handle sorting by column
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      // Toggle direction if same column is clicked
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Sort by new column, default ascending
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+  
+  // Get sorted and paginated pedidos
+  const getSortedAndPaginatedPedidos = () => {
+    let sorted = [...pedidos];
+    
+    // Sort by column
+    sorted.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch(sortColumn) {
+        case 'id':
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case 'fecha_creacion':
+          aValue = new Date(a.fecha_creacion);
+          bValue = new Date(b.fecha_creacion);
+          break;
+        case 'cliente':
+          aValue = (a.cliente_personalizado || a.sucursal || '').toLowerCase();
+          bValue = (b.cliente_personalizado || b.sucursal || '').toLowerCase();
+          break;
+        case 'items':
+          aValue = Object.values(a.productos).reduce((sum, products) => {
+            return sum + (products ? products.reduce((s, p) => s + p.quantity, 0) : 0);
+          }, 0);
+          bValue = Object.values(b.productos).reduce((sum, products) => {
+            return sum + (products ? products.reduce((s, p) => s + p.quantity, 0) : 0);
+          }, 0);
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    // Paginate
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return sorted.slice(startIndex, endIndex);
+  };
+  
+  // Get total pages
+  const getTotalPages = () => {
+    return Math.ceil(pedidos.length / itemsPerPage);
+  };
+  
+  // Sort indicator for headers
+  const getSortIndicator = (column) => {
+    if (sortColumn !== column) return ' ⟷';
+    return sortDirection === 'asc' ? ' ↑' : ' ↓';
   };
   
   const handleAdminModeChange = (mode) => {
@@ -1009,49 +1081,112 @@ const Admin = () => {
             ) : (
               <div>
                 {pedidos.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white border-collapse border border-gray-300">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="py-3 px-4 text-left border-b">ID Pedido</th>
-                          <th className="py-3 px-4 text-left border-b">Fecha</th>
-                          <th className="py-3 px-4 text-left border-b">Cliente/Sucursal</th>
-                          <th className="py-3 px-4 text-center border-b">Items</th>
-                          <th className="py-3 px-4 text-center border-b">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pedidos.map((pedido) => {
-                          const totalItems = Object.values(pedido.productos).reduce((sum, products) => {
-                            return sum + (products ? products.reduce((s, p) => s + p.quantity, 0) : 0);
-                          }, 0);
-                          
-                          return (
-                            <tr key={pedido.id} className="border-b hover:bg-gray-50">
-                              <td className="py-3 px-4">#{pedido.id}</td>
-                              <td className="py-3 px-4">{new Date(pedido.fecha_creacion).toLocaleDateString('es-AR')}</td>
-                              <td className="py-3 px-4">{pedido.cliente_personalizado || pedido.sucursal}</td>
-                              <td className="py-3 px-4 text-center">{totalItems}</td>
-                              <td className="py-3 px-4 text-center">
-                                <button
-                                  onClick={() => setSelectedPedido(pedido)}
-                                  className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded mr-2 text-sm transition-colors"
-                                >
-                                  Ver detalles
-                                </button>
-                                <button
-                                  onClick={() => generarPDFPedido(pedido)}
-                                  className="bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded text-sm transition-colors"
-                                >
-                                  PDF
-                                </button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full bg-white border-collapse border border-gray-300">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th 
+                              className="py-3 px-4 text-left border-b cursor-pointer hover:bg-gray-200 transition-colors"
+                              onClick={() => handleSort('id')}
+                            >
+                              ID Pedido{getSortIndicator('id')}
+                            </th>
+                            <th 
+                              className="py-3 px-4 text-left border-b cursor-pointer hover:bg-gray-200 transition-colors"
+                              onClick={() => handleSort('fecha_creacion')}
+                            >
+                              Fecha{getSortIndicator('fecha_creacion')}
+                            </th>
+                            <th 
+                              className="py-3 px-4 text-left border-b cursor-pointer hover:bg-gray-200 transition-colors"
+                              onClick={() => handleSort('cliente')}
+                            >
+                              Cliente/Sucursal{getSortIndicator('cliente')}
+                            </th>
+                            <th 
+                              className="py-3 px-4 text-center border-b cursor-pointer hover:bg-gray-200 transition-colors"
+                              onClick={() => handleSort('items')}
+                            >
+                              Items{getSortIndicator('items')}
+                            </th>
+                            <th className="py-3 px-4 text-center border-b">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {getSortedAndPaginatedPedidos().map((pedido) => {
+                            const totalItems = Object.values(pedido.productos).reduce((sum, products) => {
+                              return sum + (products ? products.reduce((s, p) => s + p.quantity, 0) : 0);
+                            }, 0);
+                            
+                            return (
+                              <tr key={pedido.id} className="border-b hover:bg-gray-50">
+                                <td className="py-3 px-4">#{pedido.id}</td>
+                                <td className="py-3 px-4">{new Date(pedido.fecha_creacion).toLocaleDateString('es-AR')}</td>
+                                <td className="py-3 px-4">{pedido.cliente_personalizado || pedido.sucursal}</td>
+                                <td className="py-3 px-4 text-center">{totalItems}</td>
+                                <td className="py-3 px-4 text-center">
+                                  <button
+                                    onClick={() => setSelectedPedido(pedido)}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded mr-2 text-sm transition-colors"
+                                  >
+                                    Ver detalles
+                                  </button>
+                                  <button
+                                    onClick={() => generarPDFPedido(pedido)}
+                                    className="bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded text-sm transition-colors"
+                                  >
+                                    PDF
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    {/* Pagination Controls */}
+                    <div className="mt-6 flex items-center justify-between">
+                      <div className="text-sm text-gray-600">
+                        Mostrando <span className="font-bold">{(currentPage - 1) * itemsPerPage + 1}</span> a <span className="font-bold">{Math.min(currentPage * itemsPerPage, pedidos.length)}</span> de <span className="font-bold">{pedidos.length}</span> pedidos
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          disabled={currentPage === 1}
+                          className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 transition-colors"
+                        >
+                          ← Anterior
+                        </button>
+                        
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: getTotalPages() }, (_, i) => i + 1).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`px-3 py-2 rounded transition-colors ${
+                                currentPage === page
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+                        </div>
+                        
+                        <button
+                          onClick={() => setCurrentPage(Math.min(getTotalPages(), currentPage + 1))}
+                          disabled={currentPage === getTotalPages()}
+                          className="px-4 py-2 bg-gray-300 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 transition-colors"
+                        >
+                          Siguiente →
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <div className="py-8 text-center text-gray-500">
                     No hay pedidos registrados
