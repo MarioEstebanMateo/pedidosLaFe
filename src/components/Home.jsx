@@ -298,9 +298,20 @@ const Home = () => {
                 >
                   -
                 </button>
-                <span className="mx-3 text-lg font-bold w-6 text-center">
-                  {categoryQuantities[product.id] || 0}
-                </span>
+                {categoryName === 'postres' && product.title.toLowerCase().startsWith('copa') ? (
+                  <input
+                    type="number"
+                    min="0"
+                    value={categoryQuantities[product.id] || 0}
+                    onChange={(e) => handleQuantityInputChange(categoryName, product.id, e.target.value)}
+                    className="mx-3 text-lg font-bold w-12 text-center border border-gray-300 rounded px-1"
+                    aria-label={`Cantidad de ${product.title}`}
+                  />
+                ) : (
+                  <span className="mx-3 text-lg font-bold w-6 text-center">
+                    {categoryQuantities[product.id] || 0}
+                  </span>
+                )}
                 <button 
                   onClick={() => handleQuantityChange(categoryName, product.id, true)}
                   className="w-9 h-9 rounded-full bg-green-600 text-white flex items-center justify-center text-lg"
