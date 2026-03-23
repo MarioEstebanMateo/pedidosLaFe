@@ -118,6 +118,18 @@ const Home = () => {
     }))
   }
   
+  // Handler for direct quantity input changes
+  const handleQuantityInputChange = (category, id, value) => {
+    const numValue = Math.max(0, parseInt(value) || 0)
+    setQuantities(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [id]: numValue
+      }
+    }))
+  }
+  
   // Handler to toggle alphabetical sorting for a category
   const toggleSortAlphabetically = (categoryName) => {
     setSortAlphabetically(prev => {
