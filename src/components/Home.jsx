@@ -15,7 +15,7 @@ const PRODUCT_CATEGORIES = [
   { name: 'crocker', displayName: 'Crocker' },
   { name: 'dieteticos', displayName: 'Dietéticos' },
   { name: 'buffet', displayName: 'Buffet' },
-  { name: 'softs', displayName: 'Softs' },
+  { name: 'softs', displayName: 'Softs y Yogurts' },
   { name: 'dulces', displayName: 'Dulces' },
   { name: 'paletas', displayName: 'Paletas' },
   { name: 'bites', displayName: 'Bites' },
@@ -158,11 +158,6 @@ const Home = () => {
         isCustomClient: false,
         customClientName: ''
       });
-      // Reset observaciones if not centro
-      if (selectedTitle !== 'Centro') {
-        setObservaciones('');
-        updateOrderData({ observaciones: '' });
-      }
     }
   }
   
@@ -389,8 +384,8 @@ const Home = () => {
               />
             </div>
           )}
-          {/* Observaciones field for Sucursal Centro */}
-          {sucursales.find(s => s.id.toString() === selectedSucursal && s.title === 'Centro') && (
+          {/* Observaciones field for all sucursales */}
+          {(selectedSucursal || showCustomClientField) && (
             <div className="mb-5 w-full max-w-[400px] mx-auto">
               <label htmlFor="observaciones" className="block mb-1 text-sm md:text-base font-bold text-[#2c3e50] text-center">
                 Observaciones:
@@ -400,7 +395,7 @@ const Home = () => {
                 className="p-2.5 rounded border border-gray-300 w-full text-base font-sans"
                 value={observaciones}
                 onChange={handleObservacionesChange}
-                placeholder="Ingrese observaciones para Centro"
+                placeholder="Ingrese observaciones (opcional)"
                 rows={3}
               />
             </div>

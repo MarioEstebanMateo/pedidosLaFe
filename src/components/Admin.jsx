@@ -12,7 +12,7 @@ const PRODUCT_CATEGORIES = [
   { name: 'crocker', displayName: 'Crocker' },
   { name: 'dieteticos', displayName: 'Dietéticos' },
   { name: 'buffet', displayName: 'Buffet' },
-  { name: 'softs', displayName: 'Softs' },
+  { name: 'softs', displayName: 'Softs y Yogurts' },
   { name: 'dulces', displayName: 'Dulces' },
   { name: 'paletas', displayName: 'Paletas' },
   { name: 'bites', displayName: 'Bites' },
@@ -24,9 +24,12 @@ const Admin = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [adminMode, setAdminMode] = useState('productos'); // 'productos' or 'sucursales'
   const [currentCategory, setCurrentCategory] = useState(PRODUCT_CATEGORIES[0].name);
   const [products, setProducts] = useState([]);
+  const [sucursales, setSucursales] = useState([]);
   const [newProductTitle, setNewProductTitle] = useState('');
+  const [newSucursalTitle, setNewSucursalTitle] = useState('');
   
   // Check authentication when component mounts
   useEffect(() => {
@@ -77,12 +80,38 @@ const Admin = () => {
     checkAuth();
   }, [navigate]);
   
-  // Load products when category changes (but only if authenticated)
+  // Load products/sucursales when category changes or mode changes (but only if authenticated)
   useEffect(() => {
     if (isAuthenticated) {
-      loadProducts(currentCategory);
+      if (adminMode === 'productos') {
+        loadProducts(currentCategory);
+      } else if (adminMode === 'sucursales') {
+        loadSucursales();
+      }
     }
-  }, [currentCategory, isAuthenticated]);
+  }, [currentCategory, adminMode, isAuthenticated]);
+  
+  const loadSucursales = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('sucursales')
+        .select('*')
+        .order('id', { ascending: true });
+      
+      if (error) throw error;
+      setSucursales(data || []);
+    } catch (error) {
+      console.error('Error loading sucursales:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron cargar las sucursales'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const loadProducts = async (category) => {
     try {
@@ -245,6 +274,142 @@ const Admin = () => {
     }
   };
   
+  // Sucursales handlers
+  const handleAddSucursal = async () => {
+    if (!newSucursalTitle.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo vacío',
+        text: 'Por favor ingresa un nombre para la sucursal'
+      });
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      const { data, error } = await supabase
+        .from('sucursales')
+        .insert([{ title: newSucursalTitle.trim() }])
+        .select();
+      
+      if (error) throw error;
+      
+      setSucursales([...sucursales, data[0]]);
+      setNewSucursalTitle('');
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Sucursal agregada',
+        text: `${newSucursalTitle} ha sido agregada`,
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } catch (error) {
+      console.error('Error adding sucursal:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo agregar la sucursal'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleEditSucursal = async (id, currentTitle) => {
+    const { value: newTitle } = await Swal.fire({
+      title: 'Editar sucursal',
+      input: 'text',
+      inputValue: currentTitle,
+      inputPlaceholder: 'Ingresa el nuevo nombre',
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes ingresar un nombre';
+        }
+      }
+    });
+    
+    if (newTitle && newTitle !== currentTitle) {
+      try {
+        setIsLoading(true);
+        
+        const { error } = await supabase
+          .from('sucursales')
+          .update({ title: newTitle })
+          .eq('id', id);
+        
+        if (error) throw error;
+        
+        setSucursales(sucursales.map(sucursal => 
+          sucursal.id === id ? { ...sucursal, title: newTitle } : sucursal
+        ));
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Sucursal actualizada',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } catch (error) {
+        console.error('Error updating sucursal:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo actualizar la sucursal'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+  
+  const handleDeleteSucursal = async (id, title) => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: `¿Deseas eliminar la sucursal "${title}"? Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+    
+    if (result.isConfirmed) {
+      try {
+        setIsLoading(true);
+        
+        const { error } = await supabase
+          .from('sucursales')
+          .delete()
+          .eq('id', id);
+        
+        if (error) throw error;
+        
+        setSucursales(sucursales.filter(sucursal => sucursal.id !== id));
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: `${title} ha sido eliminada`,
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } catch (error) {
+        console.error('Error deleting sucursal:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo eliminar la sucursal'
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+  
   const handleLogout = () => {
     Swal.fire({
       title: '¿Cerrar sesión?',
@@ -281,10 +446,37 @@ const Admin = () => {
         <h1 className="text-2xl md:text-3xl text-[#2c3e50] mb-1 text-center">Panel Administrativo</h1>
       </div>
       
+      {/* Mode Selection Buttons */}
+      <div className="mb-6 flex gap-3 justify-center">
+        <button
+          onClick={() => setAdminMode('productos')}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            adminMode === 'productos'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Gestión de Productos
+        </button>
+        <button
+          onClick={() => setAdminMode('sucursales')}
+          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+            adminMode === 'sucursales'
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          Gestión de Sucursales
+        </button>
+      </div>
+      
       <div className="bg-white rounded-lg shadow-md p-5 mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-[#2c3e50]">
-            Gestión de {PRODUCT_CATEGORIES.find(c => c.name === currentCategory).displayName}
+            {adminMode === 'productos' 
+              ? `Gestión de ${PRODUCT_CATEGORIES.find(c => c.name === currentCategory).displayName}`
+              : 'Gestión de Sucursales'
+            }
           </h2>
           
           <button 
@@ -295,81 +487,149 @@ const Admin = () => {
           </button>
         </div>
         
-        <div className="mb-6 overflow-x-auto">
-          <div className="flex flex-wrap gap-2 pb-3">
-            {PRODUCT_CATEGORIES.map((category) => (
+        {/* Products Management Section */}
+        {adminMode === 'productos' && (
+          <>
+            <div className="mb-6 overflow-x-auto">
+              <div className="flex flex-wrap gap-2 pb-3">
+                {PRODUCT_CATEGORIES.map((category) => (
+                  <button
+                    key={category.name}
+                    onClick={() => handleCategoryChange(category.name)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium ${
+                      currentCategory === category.name
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {category.displayName}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="mb-6 flex gap-2">
+              <input
+                type="text"
+                value={newProductTitle}
+                onChange={(e) => setNewProductTitle(e.target.value)}
+                className="flex-1 p-2 border border-gray-300 rounded"
+                placeholder={`Nuevo ${PRODUCT_CATEGORIES.find(c => c.name === currentCategory).displayName.slice(0, -1)}...`}
+              />
               <button
-                key={category.name}
-                onClick={() => handleCategoryChange(category.name)}
-                className={`px-4 py-2 rounded-full text-sm font-medium ${
-                  currentCategory === category.name
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                onClick={handleAddProduct}
+                className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
               >
-                {category.displayName}
+                Agregar
               </button>
-            ))}
-          </div>
-        </div>
-        
-        <div className="mb-6 flex gap-2">
-          <input
-            type="text"
-            value={newProductTitle}
-            onChange={(e) => setNewProductTitle(e.target.value)}
-            className="flex-1 p-2 border border-gray-300 rounded"
-            placeholder={`Nuevo ${PRODUCT_CATEGORIES.find(c => c.name === currentCategory).displayName.slice(0, -1)}...`}
-          />
-          <button
-            onClick={handleAddProduct}
-            className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
-          >
-            Agregar
-          </button>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="py-3 px-4 text-left">ID</th>
-                <th className="py-3 px-4 text-left">Nombre</th>
-                <th className="py-3 px-4 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.length > 0 ? (
-                products.map((product) => (
-                  <tr key={product.id} className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-4">{product.id}</td>
-                    <td className="py-2 px-4">{product.title}</td>
-                    <td className="py-2 px-4 text-center">
-                      <button
-                        onClick={() => handleEditProduct(product.id, product.title)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded mr-2 text-sm transition-colors"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProduct(product.id, product.title)}
-                        className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded text-sm transition-colors"
-                      >
-                        Eliminar
-                      </button>
-                    </td>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="py-3 px-4 text-left">ID</th>
+                    <th className="py-3 px-4 text-left">Nombre</th>
+                    <th className="py-3 px-4 text-center">Acciones</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="3" className="py-4 text-center text-gray-500">
-                    No hay productos en esta categoría
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {products.length > 0 ? (
+                    products.map((product) => (
+                      <tr key={product.id} className="border-b hover:bg-gray-50">
+                        <td className="py-2 px-4">{product.id}</td>
+                        <td className="py-2 px-4">{product.title}</td>
+                        <td className="py-2 px-4 text-center">
+                          <button
+                            onClick={() => handleEditProduct(product.id, product.title)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded mr-2 text-sm transition-colors"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product.id, product.title)}
+                            className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded text-sm transition-colors"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="py-4 text-center text-gray-500">
+                        No hay productos en esta categoría
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+        
+        {/* Sucursales Management Section */}
+        {adminMode === 'sucursales' && (
+          <>
+            <div className="mb-6 flex gap-2">
+              <input
+                type="text"
+                value={newSucursalTitle}
+                onChange={(e) => setNewSucursalTitle(e.target.value)}
+                className="flex-1 p-2 border border-gray-300 rounded"
+                placeholder="Nueva sucursal..."
+              />
+              <button
+                onClick={handleAddSucursal}
+                className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors"
+              >
+                Agregar
+              </button>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="py-3 px-4 text-left">ID</th>
+                    <th className="py-3 px-4 text-left">Nombre</th>
+                    <th className="py-3 px-4 text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sucursales.length > 0 ? (
+                    sucursales.map((sucursal) => (
+                      <tr key={sucursal.id} className="border-b hover:bg-gray-50">
+                        <td className="py-2 px-4">{sucursal.id}</td>
+                        <td className="py-2 px-4">{sucursal.title}</td>
+                        <td className="py-2 px-4 text-center">
+                          <button
+                            onClick={() => handleEditSucursal(sucursal.id, sucursal.title)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded mr-2 text-sm transition-colors"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSucursal(sucursal.id, sucursal.title)}
+                            className="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded text-sm transition-colors"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="py-4 text-center text-gray-500">
+                        No hay sucursales registradas
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

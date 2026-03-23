@@ -16,7 +16,7 @@ const PRODUCT_CATEGORIES = [
   { name: 'crocker', displayName: 'Crocker', column: 'right' },
   { name: 'dieteticos', displayName: 'Dietéticos', column: 'right' },
   { name: 'buffet', displayName: 'Buffet', column: 'right' },
-  { name: 'softs', displayName: 'Softs', column: 'right' },
+  { name: 'softs', displayName: 'Softs y Yogurts', column: 'right' },
   { name: 'dulces', displayName: 'Dulces', column: 'right' },
   { name: 'paletas', displayName: 'Paletas', column: 'right' },
   { name: 'bites', displayName: 'Bites', column: 'right' },
@@ -223,9 +223,8 @@ const ReviewOrder = () => {
       });
     }
 
-    // Add Observaciones at the bottom of the right column if Sucursal Centro
+    // Add Observaciones to PDF if present
     if (
-      orderData.sucursalTitle === 'Centro' &&
       orderData.observaciones &&
       orderData.observaciones.trim() !== ''
     ) {
@@ -367,8 +366,8 @@ const ReviewOrder = () => {
               )}
             </tbody>
           </table>
-          {/* Observaciones for Centro, visible in review */}
-          {orderData.sucursalTitle === 'Centro' && orderData.observaciones && orderData.observaciones.trim() !== '' && (
+          {/* Observaciones visible in review if present */}
+          {orderData.observaciones && orderData.observaciones.trim() !== '' && (
             <div className="mt-6 text-right">
               <div className="font-bold text-[#2c3e50]">Observaciones:</div>
               <div className="text-[#34495e] whitespace-pre-line">{orderData.observaciones}</div>
