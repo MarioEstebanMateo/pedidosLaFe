@@ -7,51 +7,56 @@ const Tutorial = () => {
   const steps = [
     {
       number: 1,
-      title: 'Seleccionar Fecha del Pedido',
-      description: 'Elige la fecha de entrega para tu pedido. La fecha debe ser igual o posterior al día actual.',
-      icon: '📅'
+      title: 'Fecha y Destino del Pedido',
+      description: 'Primero, selecciona la fecha de entrega (debe ser igual o posterior a hoy). Luego, elige la sucursal de destino. Si es un cliente especial, selecciona "Clientes Varios" e ingresa el nombre del cliente.',
+      icon: '📅',
+      details: [
+        'La fecha debe ser válida (presente o futuro)',
+        'Puedes elegir entre sucursales existentes o crear un pedido especial'
+      ]
     },
     {
       number: 2,
-      title: 'Elegir Sucursal o Cliente',
-      description: 'Selecciona la sucursal de destino. Si es un cliente especial, elige "Clientes Varios" e ingresa el nombre del cliente.',
-      icon: '🏪'
+      title: 'Selecciona tus Productos',
+      description: 'Explora las categorías disponibles (Helados, Palitos, Postres, Crocker, Dietéticos, Buffet, Softs, Dulces, Paletas, Bites, Térmicos y Barritas). Usa los botones "+" para agregar productos y "-" para quitar, o ingresa la cantidad directamente.',
+      icon: '🛒',
+      details: [
+        'Puedes ordenar alfabéticamente los productos para encontrarlos más rápido',
+        'Agrega la cantidad que necesites de cada producto',
+        'El total se actualiza automáticamente'
+      ]
     },
     {
       number: 3,
-      title: 'Seleccionar Productos',
-      description: 'Navega por las diferentes categorías (Helados, Palitos, Postres, etc.) y usa los botones "+" y "-" para agregar o quitar productos.',
-      icon: '🍦'
+      title: 'Revisa tu Pedido',
+      description: 'Haz clic en "Revisar Pedido" para ver un resumen completo organizado por categorías. Verifica los productos, cantidades y totales antes de confirmar.',
+      icon: '👀',
+      details: [
+        'Revisa que todo esté correcto',
+        'Puedes editar cantidades si es necesario',
+        'Se muestra el desglose por categoría'
+      ]
     },
     {
       number: 4,
-      title: 'Ordenar Alfabéticamente (Opcional)',
-      description: 'En la sección de Helados, puedes usar el botón "Ordenar Alfabéticamente" para encontrar productos más fácilmente.',
-      icon: '🔤'
+      title: 'Confirma tu Pedido',
+      description: 'Una vez verificado, presiona "Guardar PDF" o "Enviar por WhatsApp".',
+      icon: '✅',
+      details: [
+        'Se generará un pdf con los detalles completos',
+        'Si guardas el pdf o lo compartes por whatsapp pero ves que falta algo, puedes volver a la página principal y editar el pedido, luego guardarlo o compartirlo nuevamente por whatsapp, aclarando en el texto del whatsapp que el primer pedido tenía un error y que este es el correcto'
+      ]
     },
     {
       number: 5,
-      title: 'Agregar Observaciones',
-      description: 'Si seleccionaste la sucursal "Centro", puedes agregar observaciones especiales para el pedido.',
-      icon: '📝'
-    },
-    {
-      number: 6,
-      title: 'Revisar Pedido',
-      description: 'Haz clic en "Revisar Pedido" para ver un resumen completo de tu orden antes de enviarlo.',
-      icon: '👀'
-    },
-    {
-      number: 7,
-      title: 'Confirmar y Enviar',
-      description: 'En la pantalla de revisión, verifica que todo esté correcto y presiona "Confirmar Pedido". El pedido se guardará en el sistema automáticamente.',
-      icon: '✅'
-    },
-    {
-      number: 8,
-      title: 'Compartir por WhatsApp',
-      description: 'Después de confirmar, puedes enviar el resumen del pedido por WhatsApp al número configurado para mantener un registro.',
-      icon: '📱'
+      title: 'Descarga o Comparte',
+      description: 'Después de confirmar, puedes generar un PDF del pedido para descargarlo, o compartirlo directamente por WhatsApp al número configurado para mantener un registro del pedido realizado.',
+      icon: '📱',
+      details: [
+        'Genera un PDF profesional del pedido',
+        'Comparte por WhatsApp con un solo clic',
+        'Mantén un registro de tus pedidos'
+      ]
     }
   ]
 
@@ -86,34 +91,48 @@ const Tutorial = () => {
                     {step.title}
                   </h2>
                 </div>
-                <p className="text-gray-700 text-sm md:text-base leading-relaxed">
+                <p className="text-gray-700 text-sm md:text-base leading-relaxed mb-3">
                   {step.description}
                 </p>
+                {step.details && (
+                  <ul className="space-y-1 ml-4">
+                    {step.details.map((detail, idx) => (
+                      <li key={idx} className="text-gray-600 text-xs md:text-sm flex items-start gap-2">
+                        <span className="text-[#315988] font-bold">✓</span>
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 md:p-6 rounded-lg mb-8 max-w-4xl mx-auto">
+      <div className="bg-green-50 border-l-4 border-green-500 p-4 md:p-6 rounded-lg mb-8 max-w-4xl mx-auto">
         <div className="flex items-start gap-3">
           <span className="text-2xl md:text-3xl">💡</span>
           <div>
-            <h3 className="font-bold text-[#2c3e50] text-base md:text-lg mb-2">
-              Consejos Útiles
+            <h3 className="font-bold text-[#2c3e50] text-base md:text-lg mb-3">
+              Consejos para Usar la Aplicación
             </h3>
             <ul className="space-y-2 text-gray-700 text-sm md:text-base">
               <li className="flex items-start gap-2">
-                <span className="text-green-600 font-bold">•</span>
-                <span>Asegúrate de revisar el pedido antes de confirmarlo, ya que no podrás editarlo después.</span>
+                <span className="text-green-600 font-bold">✓</span>
+                <span><strong>Revisa antes de confirmar:</strong> Una vez confirmado, no podrás editar el pedido, así que asegúrate de que todo esté correcto.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-600 font-bold">•</span>
-                <span>Si necesitas ayuda, usa el botón de WhatsApp en la página principal.</span>
+                <span className="text-green-600 font-bold">✓</span>
+                <span><strong>Usa las categorías:</strong> Navega por categorías para encontrar los productos más rápidamente. Puedes ordenarlos alfabéticamente si lo necesitas.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-600 font-bold">•</span>
-                <span>Los pedidos se guardan automáticamente y pueden ser consultados desde el panel administrativo.</span>
+                <span className="text-green-600 font-bold">✓</span>
+                <span><strong>Guarda o comparte:</strong> Descarga el PDF o comparte por WhatsApp para mantener un registro de tu pedido.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">✓</span>
+                <span><strong>¿Necesitas ayuda?</strong> Usa el botón de WhatsApp en la página principal para contactarnos directamente.</span>
               </li>
             </ul>
           </div>
