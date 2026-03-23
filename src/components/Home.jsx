@@ -83,7 +83,9 @@ const Home = () => {
             return
           }
           
-          newProducts[categoryName] = result.data.sort((a, b) => a.id - b.id)
+          newProducts[categoryName] = result.data
+            .filter(product => product.visible !== false) // Only show visible products
+            .sort((a, b) => a.id - b.id)
           
           // Initialize quantities from context if available, otherwise set to 0
           if (!newQuantities[categoryName]) newQuantities[categoryName] = {}

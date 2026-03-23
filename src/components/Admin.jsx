@@ -274,6 +274,39 @@ const Admin = () => {
     }
   };
   
+  const handleToggleVisibility = async (id, currentVisibility, title) => {
+    try {
+      setIsLoading(true);
+      
+      const { error } = await supabase
+        .from(currentCategory)
+        .update({ visible: !currentVisibility })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setProducts(products.map(product => 
+        product.id === id ? { ...product, visible: !currentVisibility } : product
+      ));
+      
+      Swal.fire({
+        icon: 'success',
+        title: currentVisibility ? 'Producto ocultado' : 'Producto visible',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } catch (error) {
+      console.error('Error toggling visibility:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo cambiar la visibilidad del producto'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   // Sucursales handlers
   const handleAddSucursal = async () => {
     if (!newSucursalTitle.trim()) {
@@ -530,6 +563,7 @@ const Admin = () => {
                   <tr className="bg-gray-100">
                     <th className="py-3 px-4 text-left">ID</th>
                     <th className="py-3 px-4 text-left">Nombre</th>
+                    <th className="py-3 px-4 text-center">Visible</th>
                     <th className="py-3 px-4 text-center">Acciones</th>
                   </tr>
                 </thead>
@@ -540,6 +574,23 @@ const Admin = () => {
                         <td className="py-2 px-4">{product.id}</td>
                         <td className="py-2 px-4">{product.title}</td>
                         <td className="py-2 px-4 text-center">
+                          <span className={`inline-block px-3 py-1 rounded text-white text-sm font-medium ${
+                            product.visible ? 'bg-green-600' : 'bg-gray-400'
+                          }`}>
+                            {product.visible ? 'Sí' : 'No'}
+                          </span>
+                        </td>
+                        <td className="py-2 px-4 text-center">
+                          <button
+                            onClick={() => handleToggleVisibility(product.id, product.visible, product.title)}
+                            className={`py-1 px-3 rounded mr-2 text-sm text-white transition-colors ${
+                              product.visible 
+                                ? 'bg-yellow-500 hover:bg-yellow-600' 
+                                : 'bg-blue-500 hover:bg-blue-600'
+                            }`}
+                          >
+                            {product.visible ? 'Ocultar' : 'Mostrar'}
+                          </button>
                           <button
                             onClick={() => handleEditProduct(product.id, product.title)}
                             className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded mr-2 text-sm transition-colors"
@@ -557,7 +608,7 @@ const Admin = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="3" className="py-4 text-center text-gray-500">
+                      <td colSpan="4" className="py-4 text-center text-gray-500">
                         No hay productos en esta categoría
                       </td>
                     </tr>
